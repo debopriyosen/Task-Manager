@@ -4,7 +4,11 @@ import { useTheme } from "next-themes";
 import { Moon, Sun, Menu, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export function Topbar() {
+interface TopbarProps {
+    onOpenSidebar: () => void;
+}
+
+export function Topbar({ onOpenSidebar }: TopbarProps) {
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
 
@@ -15,7 +19,7 @@ export function Topbar() {
     return (
         <header className="h-16 border-b border-border bg-card/50 backdrop-blur-xl sticky top-0 flex items-center justify-between px-6 z-10 w-full">
             <div className="flex items-center gap-4">
-                <button className="md:hidden text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-muted">
+                <button onClick={onOpenSidebar} className="md:hidden text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-muted">
                     <Menu size={20} />
                 </button>
                 <div className="relative hidden sm:block">
