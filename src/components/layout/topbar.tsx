@@ -20,7 +20,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
     }, []);
 
     return (
-        <header className="h-16 border-b border-border bg-card/50 backdrop-blur-xl sticky top-0 flex items-center justify-between px-6 z-10 w-full">
+        <header className="h-16 border-b border-border/50 bg-card/60 backdrop-blur-2xl sticky top-0 flex items-center justify-between px-6 z-10 w-full transition-colors duration-300">
             <div className="flex items-center gap-4">
                 <button onClick={onOpenSidebar} className="md:hidden text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-muted">
                     <Menu size={20} />
@@ -30,7 +30,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
                     <input
                         type="text"
                         placeholder="Search tasks..."
-                        className="pl-9 pr-4 py-2 rounded-full bg-muted/50 border border-transparent focus:border-border focus:bg-background outline-none text-sm w-64 transition-all duration-200"
+                        className="pl-9 pr-4 py-2 rounded-full bg-muted/50 hover:bg-muted/80 border border-transparent focus:border-border/50 focus:bg-background/80 outline-none text-sm w-64 transition-all duration-300 focus:w-72"
                     />
                 </div>
             </div>

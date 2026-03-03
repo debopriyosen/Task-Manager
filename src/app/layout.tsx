@@ -26,6 +26,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TasksProvider>
+            {/* Ambient Background Orbs */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+              <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary-500/20 dark:bg-primary-600/10 blur-[100px] animate-pulse-slow" />
+              <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] rounded-full bg-indigo-500/20 dark:bg-indigo-600/10 blur-[100px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
+            </div>
             {children}
           </TasksProvider>
         </ThemeProvider>
