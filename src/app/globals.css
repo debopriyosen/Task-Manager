@@ -29,7 +29,7 @@
   :root {
     --background: var(--color-background-light);
     --foreground: #0f172a;
-    --card: rgba(255, 255, 255, 0.7);
+    --card: #ffffff;
     --card-foreground: #0f172a;
     --border: #e2e8f0;
     --muted: #f1f5f9;

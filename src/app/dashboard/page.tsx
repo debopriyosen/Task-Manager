@@ -97,7 +97,7 @@ export default function DashboardPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                            Good Morning, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-indigo-400 dark:from-primary-400 dark:to-indigo-300">{userName}</span>
+                            Good Morning, {userName}
                         </h1>
                         <p className="text-muted-foreground mt-2 text-sm">Here's your productivity overview for today.</p>
                     </div>
@@ -124,7 +124,7 @@ export default function DashboardPage() {
                     {stats.map((stat, i) => {
                         const Icon = stat.icon;
                         return (
-                            <div key={i} className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-sm flex items-center gap-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-border cursor-default">
+                            <div key={i} className="bg-card border border-border rounded-2xl p-6 shadow-sm flex items-center gap-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-border cursor-default">
                                 <div className={`p-4 rounded-xl ${stat.bg}`}>
                                     <Icon className={stat.color} size={24} />
                                 </div>
@@ -140,7 +140,7 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
                         {/* Main Tasks List */}
-                        <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-sm">
+                        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
                             <h2 className="text-lg font-semibold mb-4">High Priority Tasks</h2>
                             <div className="space-y-3">
                                 {pendingPriorityTasks.length > 0 ? (
@@ -154,7 +154,7 @@ export default function DashboardPage() {
 
                     <div className="space-y-6">
                         {/* Upcoming Mini List */}
-                        <div className="bg-card/60 backdrop-blur-xl border border-border/50 rounded-2xl p-6 shadow-sm">
+                        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
                             <h2 className="text-lg font-semibold mb-4">Upcoming</h2>
                             <div className="space-y-4">
                                 {upcomingTasks.length > 0 ? upcomingTasks.map(t => (

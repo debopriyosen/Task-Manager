@@ -20,7 +20,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
     }, []);
 
     return (
-        <header className="h-16 border-b border-border/50 bg-card/60 backdrop-blur-2xl sticky top-0 flex items-center justify-between px-6 z-10 w-full transition-colors duration-300">
+        <header className="h-16 border-b border-border bg-card sticky top-0 flex items-center justify-between px-6 z-10 w-full transition-colors duration-300">
             <div className="flex items-center gap-4">
                 <button onClick={onOpenSidebar} className="md:hidden text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-muted">
                     <Menu size={20} />
