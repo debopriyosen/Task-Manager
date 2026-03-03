@@ -33,35 +33,35 @@ export default function UpcomingPage() {
         return (
             <div
                 key={task.id}
-                className="group flex items-center justify-between p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                className="group flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
                 onClick={() => setTaskToEdit(task)}
             >
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            toggleTaskStatus(task.id);
-                        }}
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${isCompleted ? 'bg-success border-success text-white' :
-                                isOnTrack ? 'bg-primary-50 border-primary-500 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400' :
-                                    'border-border text-transparent hover:border-success hover:text-success'
-                            }`}
-                    >
-                        {isOnTrack ? <Activity size={14} /> : <CheckCircle2 size={16} />}
-                    </button>
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <p className="font-medium text-sm">{task.title}</p>
-                            {isOnTrack && <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300">On Track</span>}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        toggleTaskStatus(task.id);
+                    }}
+                    className={`mt-0.5 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${isCompleted ? 'bg-success border-success text-white' :
+                        isOnTrack ? 'bg-primary-50 border-primary-500 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400' :
+                            'border-border text-transparent hover:border-success hover:text-success'
+                        }`}
+                >
+                    {isOnTrack ? <Activity size={14} /> : <CheckCircle2 size={16} />}
+                </button>
+                <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-medium text-sm break-words">{task.title}</p>
+                            {isOnTrack && <span className="flex-shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300">On Track</span>}
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${task.priority === 'high' ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' :
+                        <div className="flex flex-wrap items-center gap-2 mt-0.5 sm:mt-0">
+                            <span className={`flex-shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full ${task.priority === 'high' ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' :
                                 task.priority === 'medium' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' :
                                     'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
                                 }`}>
                                 {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                             </span>
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <span className="flex-shrink-0 text-xs text-muted-foreground flex items-center gap-1">
                                 <Clock size={12} />
                                 {format(new Date(task.due_date!), "h:mm a")}
                             </span>

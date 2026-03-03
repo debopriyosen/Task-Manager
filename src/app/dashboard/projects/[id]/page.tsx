@@ -76,12 +76,12 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                     {isOnTrack ? <Activity size={14} /> : <CheckCircle2 size={16} />}
                 </button>
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-2 truncate">
-                            <h3 className={`font-semibold truncate ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>{task.title}</h3>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <h3 className={`font-semibold break-words ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>{task.title}</h3>
                             {isOnTrack && <span className="flex-shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300">On Track</span>}
                         </div>
-                        <span className={`flex-shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${task.priority === 'high' ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' :
+                        <span className={`flex-shrink-0 w-fit text-xs font-medium px-2.5 py-1 rounded-full ${task.priority === 'high' ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' :
                             task.priority === 'medium' ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' :
                                 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400'
                             }`}>
