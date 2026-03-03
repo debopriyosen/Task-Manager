@@ -1,7 +1,6 @@
 "use client";
 
-import { useTheme } from "next-themes";
-import { Moon, Sun, Menu, Search, Folder, CheckCircle } from "lucide-react";
+import { Menu, Search, Folder, CheckCircle } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useTasks } from "@/contexts/TasksContext";
 import Link from "next/link";
@@ -12,7 +11,6 @@ interface TopbarProps {
 }
 
 export function Topbar({ onOpenSidebar }: TopbarProps) {
-    const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
     const { userName, tasks, projects } = useTasks();
     const [searchQuery, setSearchQuery] = useState("");
@@ -138,16 +136,9 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
             </div>
 
             <div className="flex items-center gap-3">
-                {mounted && (
-                    <button
-                        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                        className="p-2 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                    >
-                        {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-                    </button>
-                )}
+
                 <Link href="/dashboard/settings">
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-medium text-sm cursor-pointer border border-indigo-200 dark:bg-indigo-900 dark:text-indigo-300 dark:border-indigo-800 hover:ring-2 hover:ring-offset-2 hover:ring-indigo-500 transition-all dark:hover:ring-offset-background">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-medium text-sm cursor-pointer border border-blue-200 hover:ring-2 hover:ring-offset-2 hover:ring-blue-500 transition-all">
                         {userName ? userName.charAt(0).toUpperCase() : "U"}
                     </div>
                 </Link>
