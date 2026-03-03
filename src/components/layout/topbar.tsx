@@ -30,7 +30,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
                     <input
                         type="text"
                         placeholder="Search tasks..."
-                        className="pl-9 pr-4 py-2 rounded-full bg-muted/50 hover:bg-muted/80 border border-transparent focus:border-border/50 focus:bg-background/80 outline-none text-sm w-64 transition-all duration-300 focus:w-72"
+                        className="pl-9 pr-4 py-2 rounded-full bg-muted/50 transition-all duration-300 border border-transparent hover:border-border hover:bg-background hover:shadow-md hover:-translate-y-0.5 focus:border-primary-500 focus:bg-background focus:shadow-md focus:-translate-y-0.5 focus:ring-4 focus:ring-primary-500/10 outline-none text-sm w-64 focus:w-72"
                     />
                 </div>
             </div>
