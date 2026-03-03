@@ -6,15 +6,16 @@ import { CheckCircle2, Clock, Plus, ArrowLeft, Folder, Activity } from "lucide-r
 import { useState, useMemo } from "react";
 import { CreateTaskModal } from "@/components/tasks/create-task-modal";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 
 import { use } from "react";
 
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
-    const { tasks, projects, toggleTaskStatus } = useTasks();
+    const { tasks, projects, toggleTaskStatus, deleteProject } = useTasks();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+    const router = useRouter();
 
     const project = useMemo(() => projects.find((p) => p.id === id), [projects, id]);
 
@@ -43,6 +44,13 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     const completedCount = completedTasks.length;
     const progress = projectTasks.length > 0 ? (completedCount / projectTasks.length) * 100 : 0;
 
+    const handleDeleteProject = () => {
+        if (window.confirm("Are you sure you want to delete this subject? All associated tasks will be detached.")) {
+            deleteProject(project.id);
+            router.push("/dashboard/projects");
+        }
+    };
+
     const renderTask = (task: Task) => {
         const isCompleted = task.status === "completed";
         const isOnTrack = task.status === "on_track";
@@ -61,8 +69,8 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                         toggleTaskStatus(task.id);
                     }}
                     className={`mt-1 flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isCompleted ? 'bg-success border-success text-white' :
-                            isOnTrack ? 'bg-primary-50 border-primary-500 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400' :
-                                'border-border text-transparent hover:border-success hover:text-success'
+                        isOnTrack ? 'bg-primary-50 border-primary-500 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400' :
+                            'border-border text-transparent hover:border-success hover:text-success'
                         }`}
                 >
                     {isOnTrack ? <Activity size={14} /> : <CheckCircle2 size={16} />}
@@ -140,13 +148,21 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                             </div>
                         </div>
 
-                        <button
-                            onClick={() => setIsModalOpen(true)}
-                            className="flex-shrink-0 flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm shadow-primary-600/20 active:scale-95"
-                        >
-                            <Plus size={18} />
-                            Add Task
-                        </button>
+                        <div className="flex items-center gap-3 mt-4 sm:mt-0">
+                            <button
+                                onClick={handleDeleteProject}
+                                className="flex-shrink-0 flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-500/10 dark:hover:bg-red-500/20 dark:text-red-400 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                            >
+                                Delete
+                            </button>
+                            <button
+                                onClick={() => setIsModalOpen(true)}
+                                className="flex-shrink-0 flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm shadow-primary-600/20 active:scale-95"
+                            >
+                                <Plus size={18} />
+                                Add Task
+                            </button>
+                        </div>
                     </div>
 
                     <div className="mt-8 bg-card border border-border rounded-xl p-4 shadow-sm flex items-center justify-between gap-6">
