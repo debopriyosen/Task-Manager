@@ -35,12 +35,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             )}
             <aside className={`fixed inset-y-0 left-0 z-50 w-72 md:w-64 border-r border-border bg-card/95 backdrop-blur-xl h-screen flex flex-col transition-transform duration-300 md:sticky md:top-0 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
                 <div className="p-6">
-                    <h1 className="text-xl font-bold text-primary-600 dark:text-primary-400 flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-primary-600 flex items-center justify-center text-white">
-                            <CheckCircle2 size={20} />
+                    <Link href="/dashboard" className="flex items-center gap-2 group w-fit" onClick={onClose}>
+                        <div className="w-8 h-8 rounded-xl bg-primary-600 flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-6 group-hover:shadow-md">
+                            <CheckCircle2 size={20} className="transition-transform duration-300 group-hover:scale-110" />
                         </div>
-                        Planora
-                    </h1>
+                        <span className="text-xl font-bold text-primary-600 dark:text-primary-400 transition-colors duration-300 group-hover:text-primary-700 dark:group-hover:text-primary-300">
+                            Planora
+                        </span>
+                    </Link>
                 </div>
 
                 <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
