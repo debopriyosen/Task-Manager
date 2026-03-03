@@ -20,7 +20,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
     }, []);
 
     return (
-        <header className="h-16 border-b border-border bg-card sticky top-0 flex items-center justify-between px-6 z-10 w-full transition-colors duration-300">
+        <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 flex items-center justify-between px-6 z-10 w-full transition-colors duration-300">
             <div className="flex items-center gap-4">
                 <button onClick={onOpenSidebar} className="md:hidden text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-muted">
                     <Menu size={20} />
@@ -30,7 +30,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
                     <input
                         type="text"
                         placeholder="Search tasks..."
-                        className="pl-9 pr-4 py-2 rounded-full bg-muted/50 transition-all duration-300 border border-transparent hover:border-border hover:bg-background hover:shadow-md hover:-translate-y-0.5 focus:border-primary-500 focus:bg-background focus:shadow-md focus:-translate-y-0.5 focus:ring-4 focus:ring-primary-500/10 outline-none text-sm w-64 focus:w-72"
+                        className="pl-9 pr-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200/80 border border-transparent focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/10 outline-none text-sm w-64 focus:w-72 transition-all duration-300"
                     />
                 </div>
             </div>
@@ -45,7 +45,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
                     </button>
                 )}
                 <Link href="/dashboard/settings">
-                    <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-medium text-sm cursor-pointer border border-primary-200 dark:bg-primary-900 dark:text-primary-300 dark:border-primary-800 hover:ring-2 hover:ring-offset-2 hover:ring-primary-500 transition-all dark:hover:ring-offset-background">
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-medium text-sm cursor-pointer border border-indigo-200 dark:bg-indigo-900 dark:text-indigo-300 dark:border-indigo-800 hover:ring-2 hover:ring-offset-2 hover:ring-indigo-500 transition-all dark:hover:ring-offset-background">
                         {userName ? userName.charAt(0).toUpperCase() : "U"}
                     </div>
                 </Link>

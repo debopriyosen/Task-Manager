@@ -42,8 +42,8 @@ export default function DashboardPage() {
                         toggleTaskStatus(task.id);
                     }}
                     className={`mt-1 flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isCompleted ? 'bg-success border-success text-white' :
-                        isOnTrack ? 'bg-primary-50 border-primary-500 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400' :
-                            'border-border text-transparent hover:border-success hover:text-success'
+                        isOnTrack ? 'bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' :
+                            'border-slate-300 text-transparent hover:border-success hover:text-success'
                         }`}
                 >
                     {isOnTrack ? <Activity size={12} /> : <CheckCircle2 size={14} />}
@@ -51,8 +51,8 @@ export default function DashboardPage() {
                 <div className="flex-1 min-w-0">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <div className="flex flex-wrap items-center gap-2">
-                            <p className={`font-medium text-sm break-words ${isCompleted ? 'line-through text-muted-foreground' : ''}`}>{task.title}</p>
-                            {isOnTrack && <span className="flex-shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300">On Track</span>}
+                            <p className={`font-medium text-sm break-words text-slate-900 dark:text-slate-100 ${isCompleted ? 'line-through text-slate-500' : ''}`}>{task.title}</p>
+                            {isOnTrack && <span className="flex-shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">On Track</span>}
                         </div>
                         <span className={`flex-shrink-0 w-fit text-xs font-medium px-2 py-0.5 rounded-full ${task.priority === 'high' ? 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400' :
                             task.priority === 'medium' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' :
@@ -74,12 +74,12 @@ export default function DashboardPage() {
 
                     {task.subtasks.length > 0 && !isCompleted && (
                         <div className="mt-3">
-                            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+                            <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
                                 <span>{completedSubtasks} of {task.subtasks.length} subtasks completed</span>
                                 <span>{Math.round(progress)}%</span>
                             </div>
-                            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                                <div className="h-full bg-primary-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                <div className="h-full bg-indigo-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
                             </div>
                         </div>
                     )}
@@ -96,10 +96,10 @@ export default function DashboardPage() {
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                            Good Morning, <span className="text-blue-600">{userName}</span>
+                        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                            Good Morning, {userName}
                         </h1>
-                        <p className="text-muted-foreground mt-2 text-sm">Here's your productivity overview for today.</p>
+                        <p className="text-slate-500 mt-2 text-sm">Here's your productivity overview for today.</p>
                     </div>
                     <div className="flex items-center gap-3">
                         <button
@@ -111,7 +111,7 @@ export default function DashboardPage() {
                         </button>
                         <button
                             onClick={() => setIsModalOpen(true)}
-                            className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm shadow-primary-600/20 active:scale-95"
+                            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm shadow-indigo-600/20 active:scale-95 hover:shadow-md hover:-translate-y-0.5"
                         >
                             <Plus size={18} />
                             Create Task
@@ -124,13 +124,13 @@ export default function DashboardPage() {
                     {stats.map((stat, i) => {
                         const Icon = stat.icon;
                         return (
-                            <div key={i} className="bg-card border border-border rounded-2xl p-6 shadow-sm flex items-center gap-4 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-border cursor-default">
+                            <div key={i} className="bg-card border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center gap-4 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 cursor-default">
                                 <div className={`p-4 rounded-xl ${stat.bg}`}>
                                     <Icon className={stat.color} size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                                    <p className="text-2xl font-bold">{stat.value}</p>
+                                    <p className="text-sm font-medium text-slate-500">{stat.title}</p>
+                                    <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
                                 </div>
                             </div>
                         );
@@ -140,8 +140,8 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
                         {/* Main Tasks List */}
-                        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-                            <h2 className="text-lg font-semibold mb-4">High Priority Tasks</h2>
+                        <div className="bg-card border border-slate-200 rounded-2xl p-6 shadow-sm">
+                            <h2 className="text-lg font-semibold mb-4 text-slate-900">High Priority Tasks</h2>
                             <div className="space-y-3">
                                 {pendingPriorityTasks.length > 0 ? (
                                     pendingPriorityTasks.map(renderTask)
@@ -154,8 +154,8 @@ export default function DashboardPage() {
 
                     <div className="space-y-6">
                         {/* Upcoming Mini List */}
-                        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-                            <h2 className="text-lg font-semibold mb-4">Upcoming</h2>
+                        <div className="bg-card border border-slate-200 rounded-2xl p-6 shadow-sm">
+                            <h2 className="text-lg font-semibold mb-4 text-slate-900">Upcoming</h2>
                             <div className="space-y-4">
                                 {upcomingTasks.length > 0 ? upcomingTasks.map(t => (
                                     <div
