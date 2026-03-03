@@ -2,8 +2,10 @@
 
 import { useTasks, Task } from "@/contexts/TasksContext";
 import { format } from "date-fns";
-import { CheckCircle2, Clock, Plus, ArrowLeft, Folder, Activity } from "lucide-react";
+import { CheckCircle2, Clock, Plus, ArrowLeft, Folder, Activity, Download } from "lucide-react";
 import { useState, useMemo } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { CreateTaskModal } from "@/components/tasks/create-task-modal";
 import Link from "next/link";
 import { notFound, useRouter } from "next/navigation";
@@ -49,6 +51,46 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             deleteProject(project.id);
             router.push("/dashboard/projects");
         }
+    };
+
+    const generatePDF = () => {
+        const doc = new jsPDF();
+
+        // Header
+        doc.setFontSize(22);
+        doc.text(project.name, 14, 20);
+
+        doc.setFontSize(11);
+        doc.setTextColor(100);
+        if (project.description) {
+            doc.text(project.description, 14, 28);
+        }
+
+        // Stats
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        const statsY = project.description ? 38 : 30;
+        doc.text(`Progress: ${Math.round(progress)}%`, 14, statsY);
+        doc.text(`Completed: ${completedCount}`, 70, statsY);
+        doc.text(`Remaining: ${pendingTasks.length}`, 120, statsY);
+
+        // Tasks Table
+        const tableData = projectTasks.map(t => [
+            t.title,
+            t.status === "completed" ? "Completed" : t.status === "on_track" ? "On Track" : "Pending",
+            t.priority.charAt(0).toUpperCase() + t.priority.slice(1),
+            t.due_date ? format(new Date(t.due_date), "MMM d, yyyy h:mm a") : "No due date"
+        ]);
+
+        autoTable(doc, {
+            startY: statsY + 10,
+            head: [['Task', 'Status', 'Priority', 'Due Date']],
+            body: tableData,
+            theme: 'striped',
+            headStyles: { fillColor: [79, 70, 229] }, // Primary-600 color approx
+        });
+
+        doc.save(`${project.name.replace(/\s+/g, '_')}_Summary.pdf`);
     };
 
     const renderTask = (task: Task) => {
@@ -148,7 +190,14 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 mt-4 sm:mt-0">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-4 sm:mt-0">
+                            <button
+                                onClick={generatePDF}
+                                className="flex-shrink-0 flex items-center gap-2 bg-card border border-border hover:bg-muted/50 text-foreground px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm"
+                            >
+                                <Download size={18} />
+                                <span className="hidden sm:inline">Export</span> PDF
+                            </button>
                             <button
                                 onClick={handleDeleteProject}
                                 className="flex-shrink-0 flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-500/10 dark:hover:bg-red-500/20 dark:text-red-400 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
@@ -157,7 +206,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                             </button>
                             <button
                                 onClick={() => setIsModalOpen(true)}
-                                className="flex-shrink-0 flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm shadow-primary-600/20 active:scale-95"
+                                className="flex-shrink-0 flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm shadow-primary-600/20 active:scale-95"
                             >
                                 <Plus size={18} />
                                 Add Task
