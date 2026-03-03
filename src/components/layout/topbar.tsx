@@ -4,6 +4,7 @@ import { useTheme } from "next-themes";
 import { Moon, Sun, Menu, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTasks } from "@/contexts/TasksContext";
+import Link from "next/link";
 
 interface TopbarProps {
     onOpenSidebar: () => void;
@@ -43,9 +44,11 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
                         {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
                     </button>
                 )}
-                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-medium text-sm cursor-pointer border border-primary-200 dark:bg-primary-900 dark:text-primary-300 dark:border-primary-800">
-                    {userName ? userName.charAt(0).toUpperCase() : "U"}
-                </div>
+                <Link href="/dashboard/settings">
+                    <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-medium text-sm cursor-pointer border border-primary-200 dark:bg-primary-900 dark:text-primary-300 dark:border-primary-800 hover:ring-2 hover:ring-offset-2 hover:ring-primary-500 transition-all dark:hover:ring-offset-background">
+                        {userName ? userName.charAt(0).toUpperCase() : "U"}
+                    </div>
+                </Link>
             </div>
         </header>
     );
