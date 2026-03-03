@@ -33,7 +33,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     onClick={onClose}
                 />
             )}
-            <aside className={`fixed inset-y-0 left-0 z-50 w-72 md:w-64 border-r border-border/10 bg-gradient-to-b from-blue-600 to-purple-500 text-white h-screen flex flex-col transition-transform duration-300 md:sticky md:top-0 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
+            <aside className={`fixed inset-y-0 left-0 z-50 w-72 md:w-64 border-r border-border/10 rounded-r-2xl overflow-hidden bg-gradient-to-b from-blue-600 to-purple-500 text-white h-screen flex flex-col transition-transform duration-300 md:sticky md:top-0 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
                 <div className="p-6">
                     <Link href="/dashboard" className="flex items-center gap-2 group w-fit" onClick={onClose}>
                         <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-6 group-hover:shadow-md">
