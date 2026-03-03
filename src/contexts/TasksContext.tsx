@@ -137,9 +137,29 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
         setTasks((prev) => [...prev, newTask]);
     };
 
+    const triggerConfetti = () => {
+        if (typeof window !== 'undefined') {
+            confetti({
+                particleCount: 150,
+                spread: 80,
+                origin: { y: 0.6 },
+                zIndex: 9999,
+                colors: ['#4f46e5', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'], // match app primary colors
+            });
+        }
+    };
+
     const updateTask = (id: string, updates: Partial<Task>) => {
         setTasks((prev) =>
-            prev.map((t) => (t.id === id ? { ...t, ...updates } : t))
+            prev.map((t) => {
+                if (t.id === id) {
+                    if (updates.status === "completed" && t.status !== "completed") {
+                        triggerConfetti();
+                    }
+                    return { ...t, ...updates };
+                }
+                return t;
+            })
         );
     };
 
@@ -155,13 +175,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                 if (t.status === "pending") nextStatus = "on_track";
                 else if (t.status === "on_track") {
                     nextStatus = "completed";
-                    // Trigger celebration
-                    confetti({
-                        particleCount: 150,
-                        spread: 80,
-                        origin: { y: 0.6 },
-                        colors: ['#4f46e5', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'], // match app primary colors
-                    });
+                    triggerConfetti();
                 }
                 else if (t.status === "completed") nextStatus = "pending";
                 return { ...t, status: nextStatus };
