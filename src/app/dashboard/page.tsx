@@ -96,8 +96,8 @@ export default function DashboardPage() {
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                            Good Morning, {userName}
+                        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 flex gap-2">
+                            Good Morning, <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{userName}</span>
                         </h1>
                         <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">Here's your productivity overview for today.</p>
                     </div>
