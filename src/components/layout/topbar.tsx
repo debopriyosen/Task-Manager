@@ -3,6 +3,7 @@
 import { useTheme } from "next-themes";
 import { Moon, Sun, Menu, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTasks } from "@/contexts/TasksContext";
 
 interface TopbarProps {
     onOpenSidebar: () => void;
@@ -11,6 +12,7 @@ interface TopbarProps {
 export function Topbar({ onOpenSidebar }: TopbarProps) {
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
+    const { userName } = useTasks();
 
     useEffect(() => {
         setMounted(true);
@@ -42,7 +44,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
                     </button>
                 )}
                 <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-medium text-sm cursor-pointer border border-primary-200 dark:bg-primary-900 dark:text-primary-300 dark:border-primary-800">
-                    U
+                    {userName ? userName.charAt(0).toUpperCase() : "U"}
                 </div>
             </div>
         </header>

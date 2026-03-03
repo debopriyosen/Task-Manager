@@ -48,6 +48,8 @@ interface TasksContextType {
     toggleSubtaskStatus: (taskId: string, subtaskId: string) => void;
     userEmail: string;
     setUserEmail: (email: string) => void;
+    userName: string;
+    setUserName: (name: string) => void;
 }
 
 const TasksContext = createContext<TasksContextType | undefined>(undefined);
@@ -56,6 +58,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
     const [projects, setProjects] = useState<Project[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [userEmail, setUserEmail] = useState<string>("user@example.com");
+    const [userName, setUserName] = useState<string>("User");
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Load from LocalStorage
@@ -83,6 +86,11 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
             setUserEmail(savedEmail);
         }
 
+        const savedName = localStorage.getItem("taskflow_name");
+        if (savedName) {
+            setUserName(savedName);
+        }
+
         setIsLoaded(true);
     }, []);
 
@@ -92,8 +100,9 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("taskflow_projects", JSON.stringify(projects));
             localStorage.setItem("taskflow_tasks", JSON.stringify(tasks));
             localStorage.setItem("taskflow_email", userEmail);
+            localStorage.setItem("taskflow_name", userName);
         }
-    }, [projects, tasks, userEmail, isLoaded]);
+    }, [projects, tasks, userEmail, userName, isLoaded]);
 
     const addProject = (projectData: Omit<Project, "id" | "created_at">) => {
         const newProject: Project = {
@@ -216,6 +225,8 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                 toggleSubtaskStatus,
                 userEmail,
                 setUserEmail,
+                userName,
+                setUserName,
             }}
         >
             {children}
