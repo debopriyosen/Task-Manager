@@ -33,7 +33,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     onClick={onClose}
                 />
             )}
-            <aside className={`fixed inset-y-0 left-0 z-50 w-72 md:w-64 bg-slate-900 border-r border-slate-800 text-slate-200 h-screen flex flex-col transition-transform duration-300 md:sticky md:top-0 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
+            <aside className={`fixed inset-y-0 left-0 z-50 w-72 md:w-64 bg-slate-900 dark:bg-slate-950 border-r border-slate-800 text-slate-200 h-screen flex flex-col transition-transform duration-300 md:sticky md:top-0 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
                 <div className="h-16 px-6 border-b border-slate-800 flex items-center shrink-0">
                     <Link href="/dashboard" className="flex items-center gap-2 group w-fit" onClick={onClose}>
                         <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-6 group-hover:shadow-indigo-500/20">
@@ -45,7 +45,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     </Link>
                 </div>
 
-                <div className="flex-1 flex flex-col bg-slate-900 overflow-hidden">
+                <div className="flex-1 flex flex-col bg-slate-900 dark:bg-slate-950 overflow-hidden">
 
                     <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
                         <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">

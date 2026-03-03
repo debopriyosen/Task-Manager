@@ -43,7 +43,7 @@ export default function DashboardPage() {
                     }}
                     className={`mt-1 flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isCompleted ? 'bg-success border-success text-white' :
                         isOnTrack ? 'bg-indigo-50 border-indigo-500 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' :
-                            'border-slate-300 text-transparent hover:border-success hover:text-success'
+                            'border-slate-300 dark:border-slate-600 text-transparent hover:border-success hover:text-success'
                         }`}
                 >
                     {isOnTrack ? <Activity size={12} /> : <CheckCircle2 size={14} />}
@@ -74,11 +74,11 @@ export default function DashboardPage() {
 
                     {task.subtasks.length > 0 && !isCompleted && (
                         <div className="mt-3">
-                            <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
+                            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                                 <span>{completedSubtasks} of {task.subtasks.length} subtasks completed</span>
                                 <span>{Math.round(progress)}%</span>
                             </div>
-                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                 <div className="h-full bg-indigo-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
                             </div>
                         </div>
@@ -99,7 +99,7 @@ export default function DashboardPage() {
                         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                             Good Morning, {userName}
                         </h1>
-                        <p className="text-slate-500 mt-2 text-sm">Here's your productivity overview for today.</p>
+                        <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">Here's your productivity overview for today.</p>
                     </div>
                     <div className="flex items-center gap-3">
                         <button
@@ -124,13 +124,13 @@ export default function DashboardPage() {
                     {stats.map((stat, i) => {
                         const Icon = stat.icon;
                         return (
-                            <div key={i} className="bg-card border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center gap-4 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 cursor-default">
+                            <div key={i} className="bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex items-center gap-4 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 cursor-default">
                                 <div className={`p-4 rounded-xl ${stat.bg}`}>
                                     <Icon className={stat.color} size={24} />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-medium text-slate-500">{stat.title}</p>
-                                    <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.title}</p>
+                                    <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{stat.value}</p>
                                 </div>
                             </div>
                         );
@@ -140,8 +140,8 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
                         {/* Main Tasks List */}
-                        <div className="bg-card border border-slate-200 rounded-2xl p-6 shadow-sm">
-                            <h2 className="text-lg font-semibold mb-4 text-slate-900">High Priority Tasks</h2>
+                        <div className="bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+                            <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">High Priority Tasks</h2>
                             <div className="space-y-3">
                                 {pendingPriorityTasks.length > 0 ? (
                                     pendingPriorityTasks.map(renderTask)
@@ -154,8 +154,8 @@ export default function DashboardPage() {
 
                     <div className="space-y-6">
                         {/* Upcoming Mini List */}
-                        <div className="bg-card border border-slate-200 rounded-2xl p-6 shadow-sm">
-                            <h2 className="text-lg font-semibold mb-4 text-slate-900">Upcoming</h2>
+                        <div className="bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+                            <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Upcoming</h2>
                             <div className="space-y-4">
                                 {upcomingTasks.length > 0 ? upcomingTasks.map(t => (
                                     <div
