@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import confetti from "canvas-confetti";
 
 export type Priority = "low" | "medium" | "high";
 export type Status = "pending" | "on_track" | "completed";
@@ -152,7 +153,16 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                 if (t.id !== id) return t;
                 let nextStatus: Status = "pending";
                 if (t.status === "pending") nextStatus = "on_track";
-                else if (t.status === "on_track") nextStatus = "completed";
+                else if (t.status === "on_track") {
+                    nextStatus = "completed";
+                    // Trigger celebration
+                    confetti({
+                        particleCount: 150,
+                        spread: 80,
+                        origin: { y: 0.6 },
+                        colors: ['#4f46e5', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'], // match app primary colors
+                    });
+                }
                 else if (t.status === "completed") nextStatus = "pending";
                 return { ...t, status: nextStatus };
             })
