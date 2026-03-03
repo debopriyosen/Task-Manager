@@ -97,7 +97,7 @@ export default function DashboardPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                            Good Morning, {userName}
+                            Good Morning, <span className="text-blue-600">{userName}</span>
                         </h1>
                         <p className="text-muted-foreground mt-2 text-sm">Here's your productivity overview for today.</p>
                     </div>
