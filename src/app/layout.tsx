@@ -7,7 +7,7 @@ import { TasksProvider } from "@/contexts/TasksContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI Task Planner",
+  title: "Planora",
   description: "Modern, minimal, AI-powered task planning web application.",
 };
 

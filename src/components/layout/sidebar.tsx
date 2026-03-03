@@ -39,7 +39,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         <div className="w-8 h-8 rounded-xl bg-primary-600 flex items-center justify-center text-white">
                             <CheckCircle2 size={20} />
                         </div>
-                        TaskFlow AI
+                        Planora
                     </h1>
                 </div>
 
