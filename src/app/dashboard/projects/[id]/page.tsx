@@ -56,38 +56,74 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     const generatePDF = () => {
         const doc = new jsPDF();
 
-        // Header
-        doc.setFontSize(22);
-        doc.text(project.name, 14, 20);
+        // --- Branding ---
+        // Header background banner
+        doc.setFillColor(79, 70, 229); // Indigo 600
+        doc.rect(0, 0, doc.internal.pageSize.width, 25, 'F');
 
+        // Logo / App Name
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text("Task Manager", 14, 16);
+
+        // Document type & date (right aligned)
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+        const dateStr = format(new Date(), "MMM d, yyyy");
+        const rightX = doc.internal.pageSize.width - 14;
+        doc.text(`Project Report • ${dateStr}`, rightX, 16, { align: "right" });
+
+        // --- Project Details ---
+        doc.setTextColor(15, 23, 42); // slate-900
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
+        doc.text(project.name, 14, 45);
+
+        let currentY = 45;
+
+        doc.setFont("helvetica", "normal");
         doc.setFontSize(11);
-        doc.setTextColor(100);
+        doc.setTextColor(100, 116, 139); // slate-500
         if (project.description) {
-            doc.text(project.description, 14, 28);
+            currentY += 8;
+            doc.text(project.description, 14, currentY);
         }
 
-        // Stats
+        // --- Stats ---
+        currentY += 15;
         doc.setFontSize(12);
-        doc.setTextColor(0);
-        const statsY = project.description ? 38 : 30;
-        doc.text(`Progress: ${Math.round(progress)}%`, 14, statsY);
-        doc.text(`Completed: ${completedCount}`, 70, statsY);
-        doc.text(`Remaining: ${pendingTasks.length}`, 120, statsY);
+        doc.setTextColor(15, 23, 42);
+        doc.setFont("helvetica", "bold");
+        doc.text(`Progress: ${Math.round(progress)}%`, 14, currentY);
+        doc.text(`Completed: ${completedCount}`, 70, currentY);
+        doc.text(`Remaining: ${pendingTasks.length}`, 120, currentY);
 
-        // Tasks Table
+        // --- Tasks Table ---
         const tableData = projectTasks.map(t => [
             t.title,
             t.status === "completed" ? "Completed" : t.status === "on_track" ? "On Track" : "Pending",
             t.priority.charAt(0).toUpperCase() + t.priority.slice(1),
-            t.due_date ? format(new Date(t.due_date), "MMM d, yyyy h:mm a") : "No due date"
+            t.due_date ? format(new Date(t.due_date), "MMM d, yyyy h:mm a") : "-"
         ]);
 
         autoTable(doc, {
-            startY: statsY + 10,
+            startY: currentY + 10,
             head: [['Task', 'Status', 'Priority', 'Due Date']],
             body: tableData,
             theme: 'striped',
-            headStyles: { fillColor: [79, 70, 229] }, // Primary-600 color approx
+            headStyles: {
+                fillColor: [79, 70, 229], // indigo-600
+                textColor: [255, 255, 255],
+                fontStyle: 'bold'
+            },
+            alternateRowStyles: {
+                fillColor: [248, 250, 252] // slate-50
+            },
+            styles: {
+                font: 'helvetica',
+                textColor: [51, 65, 85] // slate-700
+            }
         });
 
         doc.save(`${project.name.replace(/\s+/g, '_')}_Summary.pdf`);
