@@ -125,6 +125,34 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                 textColor: [51, 65, 85] // slate-700
             }
         });
+
+        // --- Task Notes ---
+        const notesData = projectTasks
+            .filter(t => t.description && t.description.trim() !== "")
+            .map(t => [t.title, t.description!]);
+
+        if (notesData.length > 0) {
+            autoTable(doc, {
+                startY: (doc as any).lastAutoTable.finalY + 15,
+                head: [['Task', 'Notes']],
+                body: notesData,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [241, 245, 249], // slate-100
+                    textColor: [15, 23, 42], // slate-900
+                    fontStyle: 'bold'
+                },
+                styles: {
+                    font: 'helvetica',
+                    textColor: [51, 65, 85], // slate-700
+                    valign: 'top'
+                },
+                columnStyles: {
+                    0: { cellWidth: 50, fontStyle: 'bold' },
+                    1: { cellWidth: 'auto' }
+                }
+            });
+        }
         const pageCount = (doc.internal as any).getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
