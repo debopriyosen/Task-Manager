@@ -25,6 +25,12 @@ export default function SettingsPage() {
         setTimeout(() => setSaved(false), 3000);
     };
 
+    const handleRemoveKey = () => {
+        setApiKeyInput("");
+        setGeminiApiKey("");
+        localStorage.removeItem("taskflow_gemini_key");
+    };
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
             <div>
@@ -67,13 +73,23 @@ export default function SettingsPage() {
                         <p className="text-xs text-muted-foreground mb-3 max-w-md">
                             Provide your own Google Gemini API key to enable AI task breakdown abilities. Keys are stored locally inside your browser and are never sent to our servers.
                         </p>
-                        <input
-                            type="password"
-                            value={apiKeyInput}
-                            onChange={(e) => setApiKeyInput(e.target.value)}
-                            className="w-full max-w-md px-4 py-2.5 rounded-xl bg-background border border-border focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all placeholder:text-muted-foreground/50"
-                            placeholder="AIzaSy..."
-                        />
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="password"
+                                value={apiKeyInput}
+                                onChange={(e) => setApiKeyInput(e.target.value)}
+                                className="w-full max-w-md px-4 py-2.5 rounded-xl bg-background border border-border focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all placeholder:text-muted-foreground/50"
+                                placeholder="AIzaSy..."
+                            />
+                            {geminiApiKey && (
+                                <button
+                                    onClick={handleRemoveKey}
+                                    className="px-4 py-2.5 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-colors whitespace-nowrap"
+                                >
+                                    Remove Key
+                                </button>
+                            )}
+                        </div>
                         <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="block text-xs text-primary-600 hover:underline mt-2">
                             Get a free Gemini API key &rarr;
                         </a>
