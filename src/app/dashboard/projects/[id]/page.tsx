@@ -65,7 +65,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         doc.setTextColor(255, 255, 255);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
-        doc.text("Task Manager", 14, 16);
+        doc.text("Planora", 14, 16);
 
         // Document type & date (right aligned)
         doc.setFont("helvetica", "normal");
