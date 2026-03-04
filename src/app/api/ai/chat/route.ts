@@ -1,0 +1,79 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { NextResponse } from "next/server";
+
+export async function POST(req: Request) {
+    try {
+        const { messages, context, geminiApiKey } = await req.json();
+
+        if (!geminiApiKey) {
+            return NextResponse.json(
+                { error: "Google Gemini API key not provided. Add it in Settings." },
+                { status: 401 }
+            );
+        }
+
+        if (!messages || !Array.isArray(messages)) {
+            return NextResponse.json(
+                { error: "Invalid conversation history provided." },
+                { status: 400 }
+            );
+        }
+
+        // Initialize Gemini with the user-provided key
+        const genAI = new GoogleGenerativeAI(geminiApiKey);
+
+        // We configure the model with a system instruction to ground it in the app's context
+        const model = genAI.getGenerativeModel({
+            model: "gemini-1.5-flash",
+            systemInstruction: `You are Planora AI, a helpful, concise, and highly capable task management assistant designed to help the user manage their productivity. 
+            
+Here is the user's current LIVE data context (including their tasks and projects):
+${context}
+
+Instructions:
+1. Answer the user's questions based primarily on the provided context (their tasks).
+2. If they ask about due dates, priorities, or project statuses, accurately reference the JSON data above.
+3. If they ask a general productivity question, you can answer it using your general knowledge.
+4. If they ask about something not in their tasks, politely inform them that you only see their Planora tasks.
+5. Be concise, friendly, and format your responses using simple Markdown (like bolding task titles or bulleting lists).
+6. Do NOT expose or talk about raw JSON structures or UUIDs to the user. Present the information naturally.`
+        });
+
+        // Convert UI messages into Gemini SDK format (role: 'user' | 'model', parts: [{text: ''}])
+        const chatHistory = messages.slice(0, -1).map((msg: any) => ({
+            role: msg.role === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.content }]
+        }));
+
+        // The last message is the current prompt
+        const currentPrompt = messages[messages.length - 1].content;
+
+        // Initialize chat
+        const chat = model.startChat({
+            history: chatHistory,
+            generationConfig: {
+                maxOutputTokens: 1000,
+                temperature: 0.7,
+            },
+        });
+
+        const result = await chat.sendMessage(currentPrompt);
+        const responseText = result.response.text();
+
+        return NextResponse.json({ reply: responseText });
+    } catch (error: any) {
+        console.error("[AI_CHAT_ERROR]", error);
+
+        if (error?.message?.includes('API key not valid')) {
+            return NextResponse.json(
+                { error: "Invalid Gemini API key. Please check your settings." },
+                { status: 401 }
+            );
+        }
+
+        return NextResponse.json(
+            { error: "Failed to generate AI response" },
+            { status: 500 }
+        );
+    }
+}
