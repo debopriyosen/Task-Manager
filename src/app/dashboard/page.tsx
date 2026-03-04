@@ -95,26 +95,26 @@ export default function DashboardPage() {
         <>
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 flex gap-2">
-                            Good Morning, <span className="text-blue-600 dark:text-blue-400 font-extrabold">{userName}</span>
+                    <div className="w-full sm:w-auto">
+                        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span>Good Morning,</span> <span className="text-blue-600 dark:text-blue-400 font-extrabold break-all">{userName}</span>
                         </h1>
                         <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">Here's your productivity overview for today.</p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3 w-full sm:w-auto mt-2 sm:mt-0">
                         <button
                             onClick={() => setIsProjectModalOpen(true)}
-                            className="flex items-center gap-2 bg-card border border-border hover:bg-muted/50 transition-colors text-foreground px-5 py-2.5 rounded-xl font-medium shadow-sm active:scale-95"
+                            className="flex items-center justify-center gap-1 sm:gap-2 bg-card border border-border hover:bg-muted/50 transition-colors text-foreground px-2 sm:px-5 py-2.5 rounded-xl font-medium shadow-sm active:scale-95 text-sm sm:text-base whitespace-nowrap"
                         >
-                            <FolderPlus size={18} />
-                            Create Project
+                            <FolderPlus size={18} className="shrink-0" />
+                            <span className="truncate">Create Project</span>
                         </button>
                         <button
                             onClick={() => setIsModalOpen(true)}
-                            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm shadow-indigo-600/20 active:scale-95 hover:shadow-md hover:-translate-y-0.5"
+                            className="flex items-center justify-center gap-1 sm:gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-2 sm:px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm shadow-indigo-600/20 active:scale-95 hover:shadow-md hover:-translate-y-0.5 text-sm sm:text-base whitespace-nowrap"
                         >
-                            <Plus size={18} />
-                            Create Task
+                            <Plus size={18} className="shrink-0" />
+                            <span className="truncate">Create Task</span>
                         </button>
                     </div>
                 </div>

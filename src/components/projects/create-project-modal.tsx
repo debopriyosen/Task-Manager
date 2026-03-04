@@ -98,11 +98,11 @@ export function CreateProjectModal({ isOpen, onClose }: { isOpen: boolean; onClo
                     </div>
                 </div>
 
-                <div className="p-6 border-t border-border bg-muted/30 flex justify-end gap-3">
-                    <button onClick={onClose} className="px-5 py-2.5 rounded-xl font-medium text-muted-foreground hover:bg-muted transition-colors">
+                <div className="p-4 sm:p-6 border-t border-border bg-muted/30 flex flex-col-reverse sm:flex-row justify-end gap-3">
+                    <button onClick={onClose} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium text-muted-foreground hover:bg-muted transition-colors text-center cursor-pointer">
                         Cancel
                     </button>
-                    <button onClick={handleCreate} className="px-5 py-2.5 rounded-xl font-medium bg-primary-600 text-white hover:bg-primary-700 transition-colors shadow-sm shadow-primary-600/20">
+                    <button onClick={handleCreate} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium bg-primary-600 text-white hover:bg-primary-700 transition-colors shadow-sm shadow-primary-600/20 text-center cursor-pointer">
                         Create Project
                     </button>
                 </div>

@@ -63,7 +63,7 @@ export default function ProjectsDashboardPage() {
                     </div>
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm shadow-primary-600/20 active:scale-95"
+                        className="flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 text-white w-full sm:w-auto px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm shadow-primary-600/20 active:scale-95"
                     >
                         <Plus size={18} />
                         New Project

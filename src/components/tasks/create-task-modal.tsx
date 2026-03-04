@@ -307,18 +307,18 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                     </div>
                 </div>
 
-                <div className="flex-shrink-0 p-6 border-t border-border bg-muted/30 flex justify-between gap-3">
+                <div className="flex-shrink-0 p-4 sm:p-6 border-t border-border bg-muted/30 flex flex-col-reverse sm:flex-row sm:justify-between gap-3">
                     {taskToEdit ? (
-                        <button onClick={handleDelete} className="px-5 py-2.5 rounded-xl font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex items-center gap-2">
+                        <button onClick={handleDelete} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2">
                             <Trash2 size={18} />
                             Delete
                         </button>
-                    ) : <div />}
-                    <div className="flex gap-3">
-                        <button onClick={onClose} className="px-5 py-2.5 rounded-xl font-medium text-muted-foreground hover:bg-muted transition-colors">
+                    ) : <div className="hidden sm:block" />}
+                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                        <button onClick={onClose} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium text-muted-foreground hover:bg-muted transition-colors text-center">
                             Cancel
                         </button>
-                        <button onClick={handleCreate} className="px-5 py-2.5 rounded-xl font-medium bg-primary-600 text-white hover:bg-primary-700 transition-colors shadow-sm shadow-primary-600/20">
+                        <button onClick={handleCreate} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium bg-primary-600 text-white hover:bg-primary-700 transition-colors shadow-sm shadow-primary-600/20 text-center">
                             {taskToEdit ? "Save Changes" : "Create Task"}
                         </button>
                     </div>
