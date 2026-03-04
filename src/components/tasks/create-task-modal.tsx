@@ -137,11 +137,12 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-card w-full max-w-lg rounded-2xl shadow-xl border border-border overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
-                <div className="flex-shrink-0 flex items-center justify-between p-6 border-b border-border">
-                    <h2 className="text-xl font-bold">{taskToEdit ? "Edit Task" : "Create New Task"}</h2>
-                    <button onClick={onClose} className="p-2 -mr-2 text-muted-foreground hover:bg-muted rounded-full transition-colors">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-indigo-950/20 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-white/90 backdrop-blur-xl w-full max-w-lg rounded-3xl shadow-2xl shadow-indigo-500/10 border border-white/50 overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
+                <div className="flex-shrink-0 flex items-center justify-between p-6 border-b border-indigo-50/80 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-50/50 to-transparent pointer-events-none" />
+                    <h2 className="text-xl font-bold text-slate-800 tracking-tight relative z-10">{taskToEdit ? "Edit Task" : "Create New Task"}</h2>
+                    <button onClick={onClose} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 hover:bg-indigo-50 rounded-full transition-all relative z-10">
                         <X size={20} />
                     </button>
                 </div>
@@ -155,7 +156,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="e.g., Launch new website"
-                            className="w-full px-4 py-2.5 rounded-xl bg-background border border-border focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all"
+                            className="w-full px-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none transition-all text-slate-700 placeholder:text-slate-400 shadow-sm"
                         />
                     </div>
 
@@ -167,7 +168,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Add more details..."
                             rows={3}
-                            className="w-full px-4 py-2.5 rounded-xl bg-background border border-border focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none resize-none transition-all"
+                            className="w-full px-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none resize-none transition-all text-slate-700 placeholder:text-slate-400 shadow-sm"
                         />
                     </div>
 
@@ -178,7 +179,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                             <select
                                 value={priority}
                                 onChange={(e) => setPriority(e.target.value as any)}
-                                className="w-full px-4 py-2.5 rounded-xl bg-background border border-border focus:border-primary-500 outline-none transition-all"
+                                className="w-full px-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none transition-all text-slate-700 shadow-sm cursor-pointer"
                             >
                                 <option value="low">Low</option>
                                 <option value="medium">Medium</option>
@@ -193,7 +194,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                                     <select
                                         value={status}
                                         onChange={(e) => setStatus(e.target.value as Status)}
-                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border focus:border-primary-500 outline-none transition-all text-sm appearance-none"
+                                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none transition-all text-sm appearance-none text-slate-700 shadow-sm cursor-pointer"
                                     >
                                         <option value="pending">Pending</option>
                                         <option value="on_track">On Track</option>
@@ -209,7 +210,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                                 <select
                                     value={projectId}
                                     onChange={(e) => setProjectId(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border focus:border-primary-500 outline-none transition-all text-sm appearance-none"
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none transition-all text-sm appearance-none text-slate-700 shadow-sm cursor-pointer"
                                 >
                                     <option value="none">No Project</option>
                                     {projects.map(p => (
@@ -226,7 +227,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                                     type="datetime-local"
                                     value={dueDate}
                                     onChange={(e) => setDueDate(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border focus:border-primary-500 outline-none transition-all text-sm"
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none transition-all text-sm text-slate-700 shadow-sm"
                                 />
                             </div>
                         </div>
@@ -237,7 +238,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                                 <select
                                     value={reminderOffset}
                                     onChange={(e) => setReminderOffset(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-background border border-border focus:border-primary-500 outline-none transition-all text-sm appearance-none"
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none transition-all text-sm appearance-none text-slate-700 shadow-sm cursor-pointer"
                                 >
                                     <option value="none">None</option>
                                     <option value="10m">10 min before</option>
@@ -249,39 +250,39 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                     </div>
 
                     {/* AI Toggle */}
-                    <div className="p-4 rounded-xl border border-primary-200 bg-primary-50 dark:bg-primary-500/10 dark:border-primary-800">
+                    <div className="p-4 rounded-xl border border-indigo-100/50 bg-indigo-50/30">
                         <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsAiEnabled(!isAiEnabled)}>
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-primary-100 dark:bg-primary-900 rounded-lg text-primary-600 dark:text-primary-400">
+                                <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
                                     <Sparkles size={18} />
                                 </div>
                                 <div>
-                                    <p className="font-medium text-sm text-primary-900 dark:text-primary-100">AI Task Breakdown</p>
-                                    <p className="text-xs text-primary-700/70 dark:text-primary-300/70 mt-0.5">Auto-generate actionable subtasks</p>
+                                    <p className="font-medium text-sm text-indigo-900">AI Task Breakdown</p>
+                                    <p className="text-xs text-indigo-700/70 mt-0.5">Auto-generate actionable subtasks</p>
                                 </div>
                             </div>
-                            <div className={`w-11 h-6 rounded-full transition-colors relative ${isAiEnabled ? 'bg-primary-600' : 'bg-muted-foreground/30'}`}>
+                            <div className={`w-11 h-6 rounded-full transition-colors relative ${isAiEnabled ? 'bg-indigo-600' : 'bg-slate-300'}`}>
                                 <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${isAiEnabled ? 'left-6' : 'left-1'}`} />
                             </div>
                         </div>
 
                         {isAiEnabled && (
-                            <div className="mt-4 pt-4 border-t border-primary-200/50 dark:border-primary-800/50">
+                            <div className="mt-4 pt-4 border-t border-indigo-100/50">
                                 {!subtasks.length ? (
                                     <button
                                         onClick={handleGenerateAI}
                                         disabled={!title || isGenerating}
-                                        className="w-full py-2 bg-primary-100 hover:bg-primary-200 dark:bg-primary-900 dark:hover:bg-primary-800 text-primary-700 dark:text-primary-300 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                                        className="w-full py-2 bg-indigo-100/50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                                     >
                                         {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
                                         {isGenerating ? "Analyzing task..." : "Generate Subtasks"}
                                     </button>
                                 ) : (
                                     <div className="space-y-2">
-                                        <p className="text-xs font-semibold text-primary-800 dark:text-primary-300 uppercase tracking-wider mb-2">Steps</p>
+                                        <p className="text-xs font-semibold text-indigo-800 uppercase tracking-wider mb-2">Steps</p>
                                         {subtasks.map((task, idx) => (
-                                            <div key={idx} className="flex items-start gap-2 text-sm bg-background/50 p-2 rounded-lg">
-                                                <div className="w-5 h-5 rounded-full border border-primary-300 dark:border-primary-700 flex-shrink-0 flex items-center justify-center text-[10px] text-primary-600 mt-0.5">{idx + 1}</div>
+                                            <div key={idx} className="flex items-start gap-2 text-sm bg-white/50 p-2 rounded-lg border border-indigo-50/50 shadow-sm">
+                                                <div className="w-5 h-5 rounded-full border border-indigo-200 flex-shrink-0 flex items-center justify-center text-[10px] text-indigo-600 mt-0.5 bg-indigo-50/50">{idx + 1}</div>
                                                 <input
                                                     type="text"
                                                     value={task.title}
@@ -290,14 +291,14 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                                                         newTasks[idx] = { ...newTasks[idx], title: e.target.value };
                                                         setSubtasks(newTasks);
                                                     }}
-                                                    className="bg-transparent border-none outline-none w-full text-foreground/90"
+                                                    className="bg-transparent border-none outline-none w-full text-slate-800"
                                                 />
-                                                <button onClick={() => setSubtasks(subtasks.filter((_, i) => i !== idx))} className="text-muted-foreground hover:text-danger p-0.5">
+                                                <button onClick={() => setSubtasks(subtasks.filter((_, i) => i !== idx))} className="text-slate-400 hover:text-red-500 transition-colors p-0.5">
                                                     <X size={14} />
                                                 </button>
                                             </div>
                                         ))}
-                                        <button onClick={() => setSubtasks([...subtasks, { title: "", is_completed: false }])} className="text-xs text-primary-600 dark:text-primary-400 font-medium hover:underline mt-2 inline-block">
+                                        <button onClick={() => setSubtasks([...subtasks, { title: "", is_completed: false }])} className="text-xs text-indigo-600 font-medium hover:underline mt-2 inline-block">
                                             + Add another step
                                         </button>
                                     </div>
@@ -307,18 +308,18 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                     </div>
                 </div>
 
-                <div className="flex-shrink-0 p-4 sm:p-6 border-t border-border bg-muted/30 flex flex-col-reverse sm:flex-row sm:justify-between gap-3">
+                <div className="flex-shrink-0 p-4 sm:p-6 border-t border-indigo-50/80 bg-slate-50/50 flex flex-col-reverse sm:flex-row sm:justify-between gap-3">
                     {taskToEdit ? (
-                        <button onClick={handleDelete} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2">
+                        <button onClick={handleDelete} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center gap-2">
                             <Trash2 size={18} />
                             Delete
                         </button>
                     ) : <div className="hidden sm:block" />}
                     <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                        <button onClick={onClose} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium text-muted-foreground hover:bg-muted transition-colors text-center">
+                        <button onClick={onClose} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium text-slate-500 hover:bg-slate-200/50 transition-colors text-center">
                             Cancel
                         </button>
-                        <button onClick={handleCreate} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium bg-primary-600 text-white hover:bg-primary-700 transition-colors shadow-sm shadow-primary-600/20 text-center">
+                        <button onClick={handleCreate} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-600/20 text-center">
                             {taskToEdit ? "Save Changes" : "Create Task"}
                         </button>
                     </div>
