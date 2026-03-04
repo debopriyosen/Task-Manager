@@ -5,3 +5,4 @@ export default function Home() {
   // In the future this might be a landing page.
   redirect("/dashboard");
 }
+<h1>Test Deployment</h1>
