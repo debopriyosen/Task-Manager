@@ -42,18 +42,34 @@ Instructions:
 
         console.log("[AI_CHAT] Formatting chat history array...");
 
-        // Gemini strictly requires the first message in 'history' to be from the 'user'.
-        // We slice out the first assistant greeting if it exists, and the current prompt at the end
+        // Gemini strictly requires the first message in 'history' to be from the 'user',
+        // and the roles MUST strictly alternate (user, model, user, model...)
+        // It must also end with 'model', since the very next message via sendMessage is 'user'.
+        const validHistory: { role: string; parts: { text: string }[] }[] = [];
         const rawHistory = messages.slice(0, -1);
-        const filteredHistory = rawHistory.length > 0 && rawHistory[0].role !== "user"
-            ? rawHistory.slice(1)
-            : rawHistory;
 
-        // Convert UI messages into Gemini SDK format (role: 'user' | 'model', parts: [{text: ''}])
-        const chatHistory = filteredHistory.map((msg: any) => ({
-            role: msg.role === 'user' ? 'user' : 'model',
-            parts: [{ text: msg.content }]
-        }));
+        for (const msg of rawHistory) {
+            const role = msg.role === 'user' ? 'user' : 'model';
+
+            if (validHistory.length === 0) {
+                // Must start with user
+                if (role === 'user') {
+                    validHistory.push({ role, parts: [{ text: msg.content }] });
+                }
+            } else {
+                // Must alternate
+                if (validHistory[validHistory.length - 1].role !== role) {
+                    validHistory.push({ role, parts: [{ text: msg.content }] });
+                }
+            }
+        }
+
+        // Must end with model
+        if (validHistory.length > 0 && validHistory[validHistory.length - 1].role === 'user') {
+            validHistory.pop();
+        }
+
+        const chatHistory = validHistory;
 
         // The last message is the current prompt
         const currentPrompt = messages[messages.length - 1].content;
