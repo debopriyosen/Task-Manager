@@ -19,6 +19,7 @@ export async function POST(req: Request) {
             );
         }
 
+        console.log("[AI_CHAT] Initializing Gemini with model...");
         // Initialize Gemini with the user-provided key
         const genAI = new GoogleGenerativeAI(geminiApiKey);
 
@@ -39,8 +40,17 @@ Instructions:
 6. Do NOT expose or talk about raw JSON structures or UUIDs to the user. Present the information naturally.`
         });
 
+        console.log("[AI_CHAT] Formatting chat history array...");
+
+        // Gemini strictly requires the first message in 'history' to be from the 'user'.
+        // We slice out the first assistant greeting if it exists, and the current prompt at the end
+        const rawHistory = messages.slice(0, -1);
+        const filteredHistory = rawHistory.length > 0 && rawHistory[0].role !== "user"
+            ? rawHistory.slice(1)
+            : rawHistory;
+
         // Convert UI messages into Gemini SDK format (role: 'user' | 'model', parts: [{text: ''}])
-        const chatHistory = messages.slice(0, -1).map((msg: any) => ({
+        const chatHistory = filteredHistory.map((msg: any) => ({
             role: msg.role === 'user' ? 'user' : 'model',
             parts: [{ text: msg.content }]
         }));
@@ -48,6 +58,7 @@ Instructions:
         // The last message is the current prompt
         const currentPrompt = messages[messages.length - 1].content;
 
+        console.log("[AI_CHAT] Starting Chat Session...");
         // Initialize chat
         const chat = model.startChat({
             history: chatHistory,
@@ -57,12 +68,15 @@ Instructions:
             },
         });
 
+        console.log("[AI_CHAT] Sending message to model...");
         const result = await chat.sendMessage(currentPrompt);
+
+        console.log("[AI_CHAT] Reading message response...");
         const responseText = result.response.text();
 
         return NextResponse.json({ reply: responseText });
     } catch (error: any) {
-        console.error("[AI_CHAT_ERROR]", error);
+        console.error("[AI_CHAT_ERROR_TRACE]", error);
 
         if (error?.message?.includes('API key not valid')) {
             return NextResponse.json(
@@ -72,7 +86,7 @@ Instructions:
         }
 
         return NextResponse.json(
-            { error: "Failed to generate AI response" },
+            { error: "Failed to generate AI response: " + (error?.message || "Unknown error") },
             { status: 500 }
         );
     }
