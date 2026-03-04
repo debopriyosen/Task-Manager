@@ -51,6 +51,8 @@ interface TasksContextType {
     setUserEmail: (email: string) => void;
     userName: string;
     setUserName: (name: string) => void;
+    geminiApiKey: string;
+    setGeminiApiKey: (key: string) => void;
 }
 
 const TasksContext = createContext<TasksContextType | undefined>(undefined);
@@ -60,6 +62,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [userEmail, setUserEmail] = useState<string>("user@example.com");
     const [userName, setUserName] = useState<string>("User");
+    const [geminiApiKey, setGeminiApiKey] = useState<string>("");
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Load from LocalStorage
@@ -92,6 +95,11 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
             setUserName(savedName);
         }
 
+        const savedApiKey = localStorage.getItem("taskflow_gemini_key");
+        if (savedApiKey) {
+            setGeminiApiKey(savedApiKey);
+        }
+
         setIsLoaded(true);
     }, []);
 
@@ -102,8 +110,9 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("taskflow_tasks", JSON.stringify(tasks));
             localStorage.setItem("taskflow_email", userEmail);
             localStorage.setItem("taskflow_name", userName);
+            localStorage.setItem("taskflow_gemini_key", geminiApiKey);
         }
-    }, [projects, tasks, userEmail, userName, isLoaded]);
+    }, [projects, tasks, userEmail, userName, geminiApiKey, isLoaded]);
 
     const addProject = (projectData: Omit<Project, "id" | "created_at">) => {
         const newProject: Project = {
@@ -251,6 +260,8 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                 setUserEmail,
                 userName,
                 setUserName,
+                geminiApiKey,
+                setGeminiApiKey,
             }}
         >
             {children}

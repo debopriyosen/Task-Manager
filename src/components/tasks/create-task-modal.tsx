@@ -13,7 +13,7 @@ interface CreateTaskModalProps {
 }
 
 export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialProjectId = "none" }: CreateTaskModalProps) {
-    const { addTask, updateTask, deleteTask, projects } = useTasks();
+    const { addTask, updateTask, deleteTask, projects, geminiApiKey } = useTasks();
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -64,20 +64,38 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
     const handleGenerateAI = async () => {
         if (!title) return;
 
+        if (!geminiApiKey) {
+            alert("No Google Gemini API key found. Please add it securely in your Settings page.");
+            return;
+        }
+
         setIsGenerating(true);
         try {
             const projectContext = projectId !== "none" ? ` [Subject/Context: ${projects.find(p => p.id === projectId)?.name || ''}]` : '';
             const res = await fetch("/api/ai/breakdown", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title: title + projectContext, description }),
+                body: JSON.stringify({
+                    title: title + projectContext,
+                    description,
+                    geminiApiKey
+                }),
             });
             const data = await res.json();
+
+            if (res.status === 401) {
+                alert(data.error || "Authentication failed. Please verify your Gemini API key in Settings.");
+                return;
+            }
+
             if (data.subtasks) {
                 setSubtasks(data.subtasks.map((t: string) => ({ title: t, is_completed: false })));
+            } else if (data.error) {
+                alert(data.error);
             }
         } catch (error) {
             console.error("Failed to generate subtasks", error);
+            alert("An unexpected error occurred while generating subtasks.");
         } finally {
             setIsGenerating(false);
         }
