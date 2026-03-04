@@ -44,11 +44,12 @@ export function CreateProjectModal({ isOpen, onClose }: { isOpen: boolean; onClo
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-card w-full max-w-md rounded-2xl shadow-xl border border-border overflow-hidden animate-in zoom-in-95 duration-200">
-                <div className="flex items-center justify-between p-6 border-b border-border">
-                    <h2 className="text-xl font-bold">Create Subject / Project</h2>
-                    <button onClick={onClose} className="p-2 -mr-2 text-muted-foreground hover:bg-muted rounded-full transition-colors">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-indigo-950/20 backdrop-blur-md animate-in fade-in duration-300">
+            <div className="bg-white/90 backdrop-blur-xl w-full max-w-md rounded-3xl shadow-2xl shadow-indigo-500/10 border border-white/50 overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className="flex items-center justify-between p-6 border-b border-indigo-50/80 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-50/50 to-transparent pointer-events-none" />
+                    <h2 className="text-xl font-bold text-slate-800 tracking-tight relative z-10">Create Subject / Project</h2>
+                    <button onClick={onClose} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 hover:bg-indigo-50 rounded-full transition-all relative z-10">
                         <X size={20} />
                     </button>
                 </div>
@@ -62,7 +63,7 @@ export function CreateProjectModal({ isOpen, onClose }: { isOpen: boolean; onClo
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="e.g., Marketing, Statistics..."
-                            className="w-full px-4 py-2.5 rounded-xl bg-background border border-border focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none transition-all"
+                            className="w-full px-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none transition-all text-slate-700 placeholder:text-slate-400 shadow-sm"
                         />
                     </div>
 
@@ -74,7 +75,7 @@ export function CreateProjectModal({ isOpen, onClose }: { isOpen: boolean; onClo
                             onChange={(e) => setDescription(e.target.value)}
                             placeholder="Add syllabus or details..."
                             rows={3}
-                            className="w-full px-4 py-2.5 rounded-xl bg-background border border-border focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none resize-none transition-all"
+                            className="w-full px-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none resize-none transition-all text-slate-700 placeholder:text-slate-400 shadow-sm"
                         />
                     </div>
 
@@ -98,11 +99,11 @@ export function CreateProjectModal({ isOpen, onClose }: { isOpen: boolean; onClo
                     </div>
                 </div>
 
-                <div className="p-4 sm:p-6 border-t border-border bg-muted/30 flex flex-col-reverse sm:flex-row justify-end gap-3">
-                    <button onClick={onClose} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium text-muted-foreground hover:bg-muted transition-colors text-center cursor-pointer">
+                <div className="p-4 sm:p-6 border-t border-indigo-50/80 bg-slate-50/50 flex flex-col-reverse sm:flex-row justify-end gap-3">
+                    <button onClick={onClose} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium text-slate-500 hover:bg-slate-200/50 transition-colors text-center cursor-pointer">
                         Cancel
                     </button>
-                    <button onClick={handleCreate} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium bg-primary-600 text-white hover:bg-primary-700 transition-colors shadow-sm shadow-primary-600/20 text-center cursor-pointer">
+                    <button onClick={handleCreate} className="w-full sm:w-auto px-4 sm:px-5 py-2.5 rounded-xl font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-600/20 text-center cursor-pointer">
                         Create Project
                     </button>
                 </div>
