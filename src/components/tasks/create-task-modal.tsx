@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Sparkles, Loader2, CalendarIcon, Bell, Trash2, FolderOpen, Activity } from "lucide-react";
+import { X, Loader2, CalendarIcon, Bell, Trash2, FolderOpen, Activity } from "lucide-react";
 import { useTasks, Subtask, Task, Project, Status } from "@/contexts/TasksContext";
 import { v4 as uuidv4 } from "uuid";
 
@@ -21,10 +21,8 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
     const [dueDate, setDueDate] = useState("");
     const [reminderOffset, setReminderOffset] = useState("none");
     const [projectId, setProjectId] = useState<string>("none");
-    const [isAiEnabled, setIsAiEnabled] = useState(false);
     const [subtasks, setSubtasks] = useState<{ id?: string; title: string; is_completed: boolean }[]>([]);
     const [status, setStatus] = useState<Status>("pending");
-    const [isGenerating, setIsGenerating] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -44,7 +42,6 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                 setProjectId(taskToEdit.projectId || "none");
                 setSubtasks(taskToEdit.subtasks);
                 setStatus(taskToEdit.status);
-                setIsAiEnabled(false);
             } else {
                 setTitle("");
                 setDescription("");
@@ -54,46 +51,13 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                 setProjectId(initialProjectId);
                 setSubtasks([]);
                 setStatus("pending");
-                setIsAiEnabled(false);
             }
         }
     }, [isOpen, taskToEdit]);
 
     if (!isOpen) return null;
 
-    const handleGenerateAI = async () => {
-        if (!title) return;
 
-        setIsGenerating(true);
-        try {
-            const projectContext = projectId !== "none" ? ` [Subject/Context: ${projects.find(p => p.id === projectId)?.name || ''}]` : '';
-            const res = await fetch("/api/ai/breakdown", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    title: title + projectContext,
-                    description,
-                }),
-            });
-            const data = await res.json();
-
-            if (res.status === 401 || res.status === 500) {
-                alert(data.error || "Server AI configuration error.");
-                return;
-            }
-
-            if (data.subtasks) {
-                setSubtasks(data.subtasks.map((t: string) => ({ title: t, is_completed: false })));
-            } else if (data.error) {
-                alert(data.error);
-            }
-        } catch (error) {
-            console.error("Failed to generate subtasks", error);
-            alert("An unexpected error occurred while generating subtasks.");
-        } finally {
-            setIsGenerating(false);
-        }
-    };
 
     const handleCreate = () => {
         if (!title.trim()) return;
@@ -261,62 +225,32 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                         </div>
                     </div>
 
-                    {/* AI Toggle */}
-                    <div className="p-4 rounded-xl border border-indigo-100/50 bg-indigo-50/30">
-                        <div className="flex items-center justify-between cursor-pointer" onClick={() => setIsAiEnabled(!isAiEnabled)}>
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
-                                    <Sparkles size={18} />
-                                </div>
-                                <div>
-                                    <p className="font-medium text-sm text-indigo-900">AI Task Breakdown</p>
-                                    <p className="text-xs text-indigo-700/70 mt-0.5">Auto-generate actionable subtasks</p>
-                                </div>
-                            </div>
-                            <div className={`w-11 h-6 rounded-full transition-colors relative ${isAiEnabled ? 'bg-indigo-600' : 'bg-slate-300'}`}>
-                                <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform ${isAiEnabled ? 'left-6' : 'left-1'}`} />
-                            </div>
-                        </div>
-
-                        {isAiEnabled && (
-                            <div className="mt-4 pt-4 border-t border-indigo-100/50">
-                                {!subtasks.length ? (
-                                    <button
-                                        onClick={handleGenerateAI}
-                                        disabled={!title || isGenerating}
-                                        className="w-full py-2 bg-indigo-100/50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                                    >
-                                        {isGenerating ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                                        {isGenerating ? "Analyzing task..." : "Generate Subtasks"}
+                    {/* Manual Subtasks Section */}
+                    <div className="p-4 rounded-xl border border-slate-100/50 bg-slate-50/30">
+                        <div className="space-y-2">
+                            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Subtasks</p>
+                            {subtasks.map((task, idx) => (
+                                <div key={idx} className="flex items-start gap-2 text-sm bg-white/50 p-2 rounded-lg border border-slate-200/50 shadow-sm">
+                                    <div className="w-5 h-5 rounded-full border border-slate-200 flex-shrink-0 flex items-center justify-center text-[10px] text-slate-500 mt-0.5 bg-slate-50/50">{idx + 1}</div>
+                                    <input
+                                        type="text"
+                                        value={task.title}
+                                        onChange={(e) => {
+                                            const newTasks = [...subtasks];
+                                            newTasks[idx] = { ...newTasks[idx], title: e.target.value };
+                                            setSubtasks(newTasks);
+                                        }}
+                                        className="bg-transparent border-none outline-none w-full text-slate-800"
+                                    />
+                                    <button onClick={() => setSubtasks(subtasks.filter((_, i) => i !== idx))} className="text-slate-400 hover:text-red-500 transition-colors p-0.5">
+                                        <X size={14} />
                                     </button>
-                                ) : (
-                                    <div className="space-y-2">
-                                        <p className="text-xs font-semibold text-indigo-800 uppercase tracking-wider mb-2">Steps</p>
-                                        {subtasks.map((task, idx) => (
-                                            <div key={idx} className="flex items-start gap-2 text-sm bg-white/50 p-2 rounded-lg border border-indigo-50/50 shadow-sm">
-                                                <div className="w-5 h-5 rounded-full border border-indigo-200 flex-shrink-0 flex items-center justify-center text-[10px] text-indigo-600 mt-0.5 bg-indigo-50/50">{idx + 1}</div>
-                                                <input
-                                                    type="text"
-                                                    value={task.title}
-                                                    onChange={(e) => {
-                                                        const newTasks = [...subtasks];
-                                                        newTasks[idx] = { ...newTasks[idx], title: e.target.value };
-                                                        setSubtasks(newTasks);
-                                                    }}
-                                                    className="bg-transparent border-none outline-none w-full text-slate-800"
-                                                />
-                                                <button onClick={() => setSubtasks(subtasks.filter((_, i) => i !== idx))} className="text-slate-400 hover:text-red-500 transition-colors p-0.5">
-                                                    <X size={14} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                        <button onClick={() => setSubtasks([...subtasks, { title: "", is_completed: false }])} className="text-xs text-indigo-600 font-medium hover:underline mt-2 inline-block">
-                                            + Add another step
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                                </div>
+                            ))}
+                            <button onClick={() => setSubtasks([...subtasks, { title: "", is_completed: false }])} className="text-xs text-indigo-600 font-medium hover:underline mt-2 inline-block">
+                                + Add subtask
+                            </button>
+                        </div>
                     </div>
                 </div>
 
