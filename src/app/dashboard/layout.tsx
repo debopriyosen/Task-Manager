@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
-import { AiChatWidget } from "@/components/chat/ai-chat-widget";
 
 export default function DashboardLayout({
     children,
@@ -15,14 +14,13 @@ export default function DashboardLayout({
     return (
         <div className="flex h-screen overflow-hidden bg-background">
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-            <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0 relative">
+            <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
                 <Topbar onOpenSidebar={() => setIsSidebarOpen(true)} />
                 <main className="flex-1 overflow-y-auto w-full p-4 md:p-8">
                     <div className="mx-auto max-w-5xl">
                         {children}
                     </div>
                 </main>
-                <AiChatWidget />
             </div>
         </div>
     );
