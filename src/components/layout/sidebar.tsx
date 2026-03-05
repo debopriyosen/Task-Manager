@@ -22,6 +22,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         { name: "Subjects", href: "/dashboard/projects", icon: Folder },
         { name: "Today", href: "/dashboard/today", icon: ListTodo },
         { name: "Upcoming", href: "/dashboard/upcoming", icon: CalendarDays },
+        { name: "Calendar", href: "/dashboard/calendar", icon: CalendarDays },
         { name: "Completed", href: "/dashboard/completed", icon: CheckCircle2 },
     ];
 

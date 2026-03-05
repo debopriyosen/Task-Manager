@@ -21,6 +21,15 @@ export interface Project {
     created_at: string;
 }
 
+export interface Reminder {
+    id: string;
+    title: string;
+    date: string; // ISO date format for the day it's scheduled
+    time?: string; // Optional time of day 09:00
+    color: string;
+    created_at: string;
+}
+
 export interface Task {
     id: string;
     title: string;
@@ -41,6 +50,11 @@ interface TasksContextType {
     updateProject: (id: string, updates: Partial<Project>) => void;
     deleteProject: (id: string) => void;
 
+    reminders: Reminder[];
+    addReminder: (reminder: Omit<Reminder, "id" | "created_at">) => void;
+    updateReminder: (id: string, updates: Partial<Reminder>) => void;
+    deleteReminder: (id: string) => void;
+
     tasks: Task[];
     addTask: (task: Omit<Task, "id" | "status" | "reminder_sent" | "created_at">) => void;
     updateTask: (id: string, updates: Partial<Task>) => void;
@@ -57,6 +71,7 @@ const TasksContext = createContext<TasksContextType | undefined>(undefined);
 
 export function TasksProvider({ children }: { children: React.ReactNode }) {
     const [projects, setProjects] = useState<Project[]>([]);
+    const [reminders, setReminders] = useState<Reminder[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [userEmail, setUserEmail] = useState<string>("user@example.com");
     const [userName, setUserName] = useState<string>("User");
@@ -70,6 +85,15 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                 setProjects(JSON.parse(savedProjects));
             } catch (e) {
                 console.error("Failed to parse projects");
+            }
+        }
+
+        const savedReminders = localStorage.getItem("taskflow_reminders");
+        if (savedReminders) {
+            try {
+                setReminders(JSON.parse(savedReminders));
+            } catch (e) {
+                console.error("Failed to parse reminders");
             }
         }
 
@@ -99,11 +123,12 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (isLoaded) {
             localStorage.setItem("taskflow_projects", JSON.stringify(projects));
+            localStorage.setItem("taskflow_reminders", JSON.stringify(reminders));
             localStorage.setItem("taskflow_tasks", JSON.stringify(tasks));
             localStorage.setItem("taskflow_email", userEmail);
             localStorage.setItem("taskflow_name", userName);
         }
-    }, [projects, tasks, userEmail, userName, isLoaded]);
+    }, [projects, reminders, tasks, userEmail, userName, isLoaded]);
 
     const addProject = (projectData: Omit<Project, "id" | "created_at">) => {
         const newProject: Project = {
@@ -124,6 +149,25 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
         setProjects((prev) => prev.filter((p) => p.id !== id));
         // Detach tasks belonging to this project instead of deleting them
         setTasks((prev) => prev.map(t => t.projectId === id ? { ...t, projectId: undefined } : t));
+    };
+
+    const addReminder = (reminderData: Omit<Reminder, "id" | "created_at">) => {
+        const newReminder: Reminder = {
+            ...reminderData,
+            id: uuidv4(),
+            created_at: new Date().toISOString(),
+        };
+        setReminders((prev) => [...prev, newReminder]);
+    };
+
+    const updateReminder = (id: string, updates: Partial<Reminder>) => {
+        setReminders((prev) =>
+            prev.map((r) => (r.id === id ? { ...r, ...updates } : r))
+        );
+    };
+
+    const deleteReminder = (id: string) => {
+        setReminders((prev) => prev.filter((r) => r.id !== id));
     };
 
     const addTask = (taskData: Omit<Task, "id" | "status" | "reminder_sent" | "created_at"> & { status?: Status }) => {
@@ -241,6 +285,10 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                 addProject,
                 updateProject,
                 deleteProject,
+                reminders,
+                addReminder,
+                updateReminder,
+                deleteReminder,
                 tasks,
                 addTask,
                 updateTask,

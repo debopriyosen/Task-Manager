@@ -8,7 +8,7 @@ import { useTasks, Task } from "@/contexts/TasksContext";
 import { format } from "date-fns";
 
 export default function DashboardPage() {
-    const { tasks, toggleTaskStatus, projects, userName } = useTasks();
+    const { tasks, reminders, toggleTaskStatus, projects, userName } = useTasks();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
     const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
@@ -90,6 +90,10 @@ export default function DashboardPage() {
 
     const pendingPriorityTasks = tasks.filter(t => (t.status === "pending" || t.status === "on_track") && t.priority === "high").slice(0, 5);
     const upcomingTasks = tasks.filter(t => (t.status === "pending" || t.status === "on_track") && t.due_date && new Date(t.due_date) >= new Date()).sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime()).slice(0, 4);
+
+    const todayString = format(new Date(), "yyyy-MM-dd");
+    const todayReminders = reminders.filter(r => r.date === todayString);
+    const upcomingReminders = reminders.filter(r => r.date > todayString).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 4);
 
     return (
         <>
@@ -177,6 +181,45 @@ export default function DashboardPage() {
                                 View All
                             </button>
                         </div>
+
+                        {/* Today's Reminders */}
+                        {(todayReminders.length > 0) && (
+                            <div className="bg-card border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-900/10 rounded-2xl p-6 shadow-sm">
+                                <h2 className="text-lg font-semibold mb-4 text-indigo-900 dark:text-indigo-100 flex items-center gap-2">
+                                    <Clock size={18} /> Today's Reminders
+                                </h2>
+                                <div className="space-y-3">
+                                    {todayReminders.map(r => (
+                                        <div key={r.id} className="flex items-center gap-3 bg-white/60 dark:bg-slate-900/50 p-3 rounded-xl border border-indigo-100 dark:border-indigo-900/50">
+                                            <div className={`w-3 h-3 rounded-full flex-shrink-0 ${r.color}`} />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{r.title}</p>
+                                                {r.time && <p className="text-xs text-indigo-600/80 dark:text-indigo-400 font-medium">{r.time}</p>}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Upcoming Reminders */}
+                        <div className="bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+                            <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">Upcoming Reminders</h2>
+                            <div className="space-y-4">
+                                {upcomingReminders.length > 0 ? upcomingReminders.map(r => (
+                                    <div key={r.id} className="flex items-center gap-3 p-2 -mx-2 rounded-lg transition-colors">
+                                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${r.color}`} />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium truncate">{r.title}</p>
+                                            <p className="text-xs text-muted-foreground truncate">{format(new Date(r.date + "T00:00:00"), "MMM d, yyyy")} {r.time ? `at ${r.time}` : ''}</p>
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <p className="text-sm text-muted-foreground text-center py-4">No upcoming reminders.</p>
+                                )}
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
