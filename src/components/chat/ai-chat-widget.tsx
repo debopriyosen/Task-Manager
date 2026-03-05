@@ -11,7 +11,7 @@ interface Message {
 }
 
 export function AiChatWidget() {
-    const { tasks, projects, geminiApiKey } = useTasks();
+    const { tasks, projects } = useTasks();
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
         { role: "assistant", content: "Hi! I'm Planora AI. Ask me about your tasks, deadlines, or projects." }
@@ -27,7 +27,7 @@ export function AiChatWidget() {
     }, [messages, isOpen]);
 
     const handleSend = async () => {
-        if (!input.trim() || !geminiApiKey) return;
+        if (!input.trim()) return;
 
         const userMsg = input.trim();
         setInput("");
@@ -55,7 +55,6 @@ export function AiChatWidget() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    geminiApiKey,
                     messages: newMessages,
                     context: contextString
                 }),
@@ -109,72 +108,52 @@ export function AiChatWidget() {
                         </button>
                     </div>
 
-                    {!geminiApiKey ? (
-                        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center bg-slate-50/50">
-                            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4 text-red-500">
-                                <KeyRound size={32} />
-                            </div>
-                            <h4 className="text-slate-800 font-semibold mb-2">API Key Required</h4>
-                            <p className="text-sm text-slate-500 mb-6 max-w-[250px]">
-                                To chat with Planora AI, you need to provide your own Google Gemini API key.
-                            </p>
-                            <Link
-                                href="/dashboard/settings"
-                                onClick={() => setIsOpen(false)}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm"
-                            >
-                                Go to Settings
-                            </Link>
-                        </div>
-                    ) : (
-                        <>
-                            {/* Messages Area */}
-                            <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50 custom-scrollbar">
-                                {messages.map((msg, i) => (
-                                    <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                                        <div
-                                            className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${msg.role === "user"
-                                                    ? "bg-indigo-600 text-white rounded-br-sm shadow-sm"
-                                                    : "bg-white border border-slate-200 text-slate-700 rounded-bl-sm shadow-sm"
-                                                }`}
-                                        >
-                                            <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                                {isLoading && (
-                                    <div className="flex justify-start">
-                                        <div className="bg-white border border-slate-200 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
-                                            <Loader2 size={16} className="text-indigo-500 animate-spin" />
-                                        </div>
-                                    </div>
-                                )}
-                                <div ref={messagesEndRef} />
-                            </div>
 
-                            {/* Input Area */}
-                            <div className="p-4 bg-white border-t border-slate-100">
-                                <div className="relative flex items-end gap-2">
-                                    <textarea
-                                        value={input}
-                                        onChange={(e) => setInput(e.target.value)}
-                                        onKeyDown={handleKeyDown}
-                                        placeholder="Ask about your tasks..."
-                                        className="w-full bg-slate-100/50 border border-slate-200 rounded-2xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 resize-none max-h-[120px] transition-all text-slate-700 placeholder:text-slate-400"
-                                        rows={1}
-                                        style={{ minHeight: '44px' }}
-                                    />
-                                    <button
-                                        onClick={handleSend}
-                                        disabled={!input.trim() || isLoading}
-                                        className="absolute right-1.5 bottom-1.5 p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-colors shadow-sm"
-                                    >
-                                        <Send size={16} className="ml-0.5" />
-                                    </button>
+                    {/* Messages Area */}
+                    <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50/50 custom-scrollbar">
+                        {messages.map((msg, i) => (
+                            <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                                <div
+                                    className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${msg.role === "user"
+                                        ? "bg-indigo-600 text-white rounded-br-sm shadow-sm"
+                                        : "bg-white border border-slate-200 text-slate-700 rounded-bl-sm shadow-sm"
+                                        }`}
+                                >
+                                    <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                                 </div>
                             </div>
-                        </>
-                    )}
+                        ))}
+                        {isLoading && (
+                            <div className="flex justify-start">
+                                <div className="bg-white border border-slate-200 rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm">
+                                    <Loader2 size={16} className="text-indigo-500 animate-spin" />
+                                </div>
+                            </div>
+                        )}
+                        <div ref={messagesEndRef} />
+                    </div>
+
+                    {/* Input Area */}
+                    <div className="p-4 bg-white border-t border-slate-100">
+                        <div className="relative flex items-end gap-2">
+                            <textarea
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder="Ask about your tasks..."
+                                className="w-full bg-slate-100/50 border border-slate-200 rounded-2xl pl-4 pr-12 py-3 text-sm focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 resize-none max-h-[120px] transition-all text-slate-700 placeholder:text-slate-400"
+                                rows={1}
+                                style={{ minHeight: '44px' }}
+                            />
+                            <button
+                                onClick={handleSend}
+                                disabled={!input.trim() || isLoading}
+                                className="absolute right-1.5 bottom-1.5 p-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-colors shadow-sm"
+                            >
+                                <Send size={16} className="ml-0.5" />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 

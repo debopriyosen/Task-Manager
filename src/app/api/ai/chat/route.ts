@@ -3,12 +3,13 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     try {
-        const { messages, context, geminiApiKey } = await req.json();
+        const { messages, context } = await req.json();
 
-        if (!geminiApiKey) {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
             return NextResponse.json(
-                { error: "Google Gemini API key not provided. Add it in Settings." },
-                { status: 401 }
+                { error: "Server AI configuration error. GEMINI_API_KEY is not set." },
+                { status: 500 }
             );
         }
 
@@ -20,8 +21,8 @@ export async function POST(req: Request) {
         }
 
         console.log("[AI_CHAT] Initializing Gemini with model...");
-        // Initialize Gemini with the user-provided key
-        const genAI = new GoogleGenerativeAI(geminiApiKey);
+        // Initialize Gemini with the server-provided key
+        const genAI = new GoogleGenerativeAI(apiKey);
 
         // We configure the model with a system instruction to ground it in the app's context
         const model = genAI.getGenerativeModel({

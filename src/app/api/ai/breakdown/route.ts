@@ -3,12 +3,13 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
     try {
-        const { title, description, geminiApiKey } = await req.json();
+        const { title, description } = await req.json();
 
-        if (!geminiApiKey) {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
             return NextResponse.json(
-                { error: "Google Gemini API key not provided. Add it in Settings." },
-                { status: 401 }
+                { error: "Server AI configuration error. GEMINI_API_KEY is not set." },
+                { status: 500 }
             );
         }
 
@@ -19,8 +20,8 @@ export async function POST(req: Request) {
             );
         }
 
-        // Initialize Gemini with the user-provided key
-        const genAI = new GoogleGenerativeAI(geminiApiKey);
+        // Initialize Gemini with the server-side key
+        const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `

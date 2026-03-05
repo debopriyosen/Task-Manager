@@ -13,7 +13,7 @@ interface CreateTaskModalProps {
 }
 
 export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialProjectId = "none" }: CreateTaskModalProps) {
-    const { addTask, updateTask, deleteTask, projects, geminiApiKey } = useTasks();
+    const { addTask, updateTask, deleteTask, projects } = useTasks();
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
@@ -64,11 +64,6 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
     const handleGenerateAI = async () => {
         if (!title) return;
 
-        if (!geminiApiKey) {
-            alert("No Google Gemini API key found. Please add it securely in your Settings page.");
-            return;
-        }
-
         setIsGenerating(true);
         try {
             const projectContext = projectId !== "none" ? ` [Subject/Context: ${projects.find(p => p.id === projectId)?.name || ''}]` : '';
@@ -78,13 +73,12 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                 body: JSON.stringify({
                     title: title + projectContext,
                     description,
-                    geminiApiKey
                 }),
             });
             const data = await res.json();
 
-            if (res.status === 401) {
-                alert(data.error || "Authentication failed. Please verify your Gemini API key in Settings.");
+            if (res.status === 401 || res.status === 500) {
+                alert(data.error || "Server AI configuration error.");
                 return;
             }
 
