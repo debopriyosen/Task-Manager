@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CalendarDays, CheckCircle2, ListTodo, Settings, Folder, Plus } from "lucide-react";
+import { LayoutDashboard, CalendarDays, CheckCircle2, ListTodo, Settings, Folder, Plus, Activity } from "lucide-react";
 import { useTasks } from "@/contexts/TasksContext";
 import { useState } from "react";
 import { CreateTaskModal } from "@/components/tasks/create-task-modal";
@@ -19,6 +19,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     const navItems = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+        { name: "Analytics", href: "/dashboard/analytics", icon: Activity },
         { name: "Subjects", href: "/dashboard/projects", icon: Folder },
         { name: "Today", href: "/dashboard/today", icon: ListTodo },
         { name: "Upcoming", href: "/dashboard/upcoming", icon: CalendarDays },

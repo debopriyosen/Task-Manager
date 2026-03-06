@@ -42,6 +42,7 @@ export interface Task {
     reminder_sent: boolean;
     subtasks: Subtask[];
     created_at: string;
+    completed_at?: string;
 }
 
 interface TasksContextType {
@@ -197,10 +198,14 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
         setTasks((prev) =>
             prev.map((t) => {
                 if (t.id === id) {
+                    let additionalUpdates: Partial<Task> = {};
                     if (updates.status === "completed" && t.status !== "completed") {
                         triggerConfetti();
+                        additionalUpdates.completed_at = new Date().toISOString();
+                    } else if (updates.status && updates.status !== "completed" && t.status === "completed") {
+                        additionalUpdates.completed_at = undefined;
                     }
-                    return { ...t, ...updates };
+                    return { ...t, ...updates, ...additionalUpdates };
                 }
                 return t;
             })
@@ -216,13 +221,19 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
             prev.map((t) => {
                 if (t.id !== id) return t;
                 let nextStatus: Status = "pending";
-                if (t.status === "pending") nextStatus = "on_track";
-                else if (t.status === "on_track") {
+                let completedAt = t.completed_at;
+
+                if (t.status === "pending") {
+                    nextStatus = "on_track";
+                } else if (t.status === "on_track") {
                     nextStatus = "completed";
+                    completedAt = new Date().toISOString();
                     triggerConfetti();
+                } else if (t.status === "completed") {
+                    nextStatus = "pending";
+                    completedAt = undefined;
                 }
-                else if (t.status === "completed") nextStatus = "pending";
-                return { ...t, status: nextStatus };
+                return { ...t, status: nextStatus, completed_at: completedAt };
             })
         );
     };
