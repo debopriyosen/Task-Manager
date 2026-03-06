@@ -9,6 +9,11 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Planora",
   description: "Modern, minimal, AI-powered task planning web application.",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
