@@ -18,6 +18,7 @@ export function CreateReminderModal({ isOpen, onClose, initialDate, reminderToEd
     const [date, setDate] = useState("");
     const [time, setTime] = useState("");
     const [color, setColor] = useState("bg-amber-500");
+    const [isAlarm, setIsAlarm] = useState(false);
 
     const colors = [
         { name: "Blue", class: "bg-blue-500" },
@@ -37,11 +38,13 @@ export function CreateReminderModal({ isOpen, onClose, initialDate, reminderToEd
                 setDate(reminderToEdit.date);
                 setTime(reminderToEdit.time || "");
                 setColor(reminderToEdit.color);
+                setIsAlarm(reminderToEdit.isAlarm || false);
             } else {
                 setTitle("");
                 setDate(initialDate || new Date().toISOString().split("T")[0]);
                 setTime("");
                 setColor("bg-amber-500");
+                setIsAlarm(false);
             }
         }
     }, [isOpen, reminderToEdit, initialDate]);
@@ -57,6 +60,7 @@ export function CreateReminderModal({ isOpen, onClose, initialDate, reminderToEd
                 date,
                 time: time || undefined,
                 color,
+                isAlarm,
             });
         } else {
             addReminder({
@@ -64,6 +68,7 @@ export function CreateReminderModal({ isOpen, onClose, initialDate, reminderToEd
                 date,
                 time: time || undefined,
                 color,
+                isAlarm,
             });
         }
         onClose();
@@ -143,6 +148,23 @@ export function CreateReminderModal({ isOpen, onClose, initialDate, reminderToEd
                                 Alert scheduled for: {new Date(date + (time ? `T${time}` : 'T00:00:00')).toLocaleString()}
                             </p>
                         )}
+
+                        <div className="flex items-center justify-between pt-2 border-t border-indigo-100/50">
+                            <div className="flex items-center gap-2">
+                                <Clock size={14} className="text-indigo-400" />
+                                <span className="text-xs font-medium text-slate-600">Audible Alarm</span>
+                            </div>
+                            <button
+                                onClick={() => setIsAlarm(!isAlarm)}
+                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${isAlarm ? "bg-amber-500" : "bg-slate-200"
+                                    } cursor-pointer`}
+                            >
+                                <span
+                                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${isAlarm ? "translate-x-5" : "translate-x-1"
+                                        }`}
+                                />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Color Picker */}

@@ -1,12 +1,12 @@
 "use client";
 
 import { useTasks } from "@/contexts/TasksContext";
-import { Mail, Save, User, Bell, BellOff, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { requestNotificationPermission, checkNotificationPermission, showNotification } from "@/lib/notification";
+import { requestNotificationPermission, checkNotificationPermission, showNotification, playAlarmSound } from "@/lib/notification";
+import { Volume2, VolumeX, Bell, BellOff, Loader2, Save, User, Mail } from "lucide-react";
 
 export default function SettingsPage() {
-    const { userEmail, setUserEmail, userName, setUserName, notificationsEnabled, setNotificationsEnabled } = useTasks();
+    const { userEmail, setUserEmail, userName, setUserName, notificationsEnabled, setNotificationsEnabled, alarmEnabled, setAlarmEnabled } = useTasks();
     const [emailInput, setEmailInput] = useState("");
     const [nameInput, setNameInput] = useState("");
     const [saved, setSaved] = useState(false);
@@ -194,6 +194,13 @@ export default function SettingsPage() {
                         >
                             {testState === "sending" && <Loader2 size={12} className="animate-spin" />}
                             {testState === "sent" ? "Sent!" : "Send Test Notification"}
+                        </button>
+                        <button
+                            onClick={() => playAlarmSound()}
+                            className="text-xs font-medium text-amber-600 hover:text-amber-700 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2"
+                        >
+                            <Volume2 size={12} />
+                            Test Alarm Sound
                         </button>
                         <div className="flex flex-col gap-0.5">
                             <span className="text-[10px] text-muted-foreground uppercase tracking-widest">

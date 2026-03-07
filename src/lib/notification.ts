@@ -20,8 +20,53 @@ export const requestNotificationPermission = async (): Promise<NotificationPermi
     return Notification.permission;
 };
 
-export const showNotification = (title: string, options?: NotificationOptions) => {
+export const playAlarmSound = () => {
+    if (typeof window === 'undefined') return;
+
+    try {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A5 note
+
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(1, audioContext.currentTime + 0.1);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 1);
+
+        // Secondary boop for more "alarm" feel
+        setTimeout(() => {
+            const osc2 = audioContext.createOscillator();
+            const gain2 = audioContext.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1100, audioContext.currentTime);
+            gain2.gain.setValueAtTime(0, audioContext.currentTime);
+            gain2.gain.exponentialRampToValueAtTime(1, audioContext.currentTime + 0.1);
+            gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+            osc2.connect(gain2);
+            gain2.connect(audioContext.destination);
+            osc2.start();
+            osc2.stop(audioContext.currentTime + 1);
+        }, 300);
+
+    } catch (e) {
+        console.error("Failed to play alarm sound:", e);
+    }
+};
+
+export const showNotification = (title: string, options?: NotificationOptions & { isAlarm?: boolean }) => {
     console.log("showNotification called with:", title, options);
+
+    if (options?.isAlarm) {
+        playAlarmSound();
+    }
 
     const isNotificationSupported = typeof window !== 'undefined' && "Notification" in window;
     const isServiceWorkerSupported = typeof window !== 'undefined' && "serviceWorker" in navigator;

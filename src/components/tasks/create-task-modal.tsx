@@ -25,6 +25,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
     const [status, setStatus] = useState<Status>("pending");
     const [showCustomReminder, setShowCustomReminder] = useState(false);
     const [customReminderTime, setCustomReminderTime] = useState("");
+    const [isAlarm, setIsAlarm] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -57,6 +58,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                 setProjectId(taskToEdit.projectId || "none");
                 setSubtasks(taskToEdit.subtasks);
                 setStatus(taskToEdit.status);
+                setIsAlarm(taskToEdit.isAlarm || false);
             } else {
                 setTitle("");
                 setDescription("");
@@ -66,6 +68,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                 setProjectId(initialProjectId);
                 setSubtasks([]);
                 setStatus("pending");
+                setIsAlarm(false);
             }
         }
     }, [isOpen, taskToEdit]);
@@ -107,6 +110,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                 reminder_sent: (reminderTime !== undefined && reminderTime !== taskToEdit.reminder_time) ? false : taskToEdit.reminder_sent,
                 subtasks: formattedSubtasks,
                 status,
+                isAlarm,
             });
         } else {
             addTask({
@@ -117,6 +121,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                 due_date: dueDate ? new Date(dueDate).toISOString() : undefined,
                 reminder_time: reminderTime,
                 subtasks: formattedSubtasks,
+                isAlarm,
             });
         }
 
@@ -251,6 +256,23 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                                 })()}
                             </p>
                         )}
+
+                        <div className="flex items-center justify-between pt-2 border-t border-indigo-100/50">
+                            <div className="flex items-center gap-2">
+                                <Clock size={14} className="text-indigo-400" />
+                                <span className="text-xs font-medium text-slate-600">Audible Alarm</span>
+                            </div>
+                            <button
+                                onClick={() => setIsAlarm(!isAlarm)}
+                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${isAlarm ? "bg-amber-500" : "bg-slate-200"
+                                    } cursor-pointer`}
+                            >
+                                <span
+                                    className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${isAlarm ? "translate-x-5" : "translate-x-1"
+                                        }`}
+                                />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

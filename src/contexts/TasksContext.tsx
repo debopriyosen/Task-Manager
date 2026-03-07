@@ -29,6 +29,7 @@ export interface Reminder {
     time?: string; // Optional time of day 09:00
     color: string;
     reminder_sent?: boolean;
+    isAlarm?: boolean;
     created_at: string;
 }
 
@@ -42,6 +43,7 @@ export interface Task {
     status: Status;
     reminder_time?: string;
     reminder_sent: boolean;
+    isAlarm: boolean;
     subtasks: Subtask[];
     created_at: string;
     completed_at?: string;
@@ -70,6 +72,8 @@ interface TasksContextType {
     setUserName: (name: string) => void;
     notificationsEnabled: boolean;
     setNotificationsEnabled: (enabled: boolean) => void;
+    alarmEnabled: boolean;
+    setAlarmEnabled: (enabled: boolean) => void;
 }
 
 const TasksContext = createContext<TasksContextType | undefined>(undefined);
@@ -81,12 +85,14 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
     const [userEmail, setUserEmail] = useState<string>("user@example.com");
     const [userName, setUserName] = useState<string>("User");
     const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
+    const [alarmEnabled, setAlarmEnabled] = useState<boolean>(true);
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Refs to avoid stale closures in setInterval
     const tasksRef = React.useRef<Task[]>([]);
     const remindersRef = React.useRef<Reminder[]>([]);
     const notificationsEnabledRef = React.useRef<boolean>(true);
+    const alarmEnabledRef = React.useRef<boolean>(true);
 
     useEffect(() => {
         tasksRef.current = tasks;
@@ -99,6 +105,10 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         notificationsEnabledRef.current = notificationsEnabled;
     }, [notificationsEnabled]);
+
+    useEffect(() => {
+        alarmEnabledRef.current = alarmEnabled;
+    }, [alarmEnabled]);
 
     // Load from LocalStorage
     useEffect(() => {
@@ -144,6 +154,11 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
             setNotificationsEnabled(savedNotifications === "true");
         }
 
+        const savedAlarm = localStorage.getItem("taskflow_alarm");
+        if (savedAlarm !== null) {
+            setAlarmEnabled(savedAlarm === "true");
+        }
+
         setIsLoaded(true);
     }, []);
 
@@ -156,8 +171,9 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("taskflow_email", userEmail);
             localStorage.setItem("taskflow_name", userName);
             localStorage.setItem("taskflow_notifications", String(notificationsEnabled));
+            localStorage.setItem("taskflow_alarm", String(alarmEnabled));
         }
-    }, [projects, reminders, tasks, userEmail, userName, notificationsEnabled, isLoaded]);
+    }, [projects, reminders, tasks, userEmail, userName, notificationsEnabled, alarmEnabled, isLoaded]);
 
     const addProject = (projectData: Omit<Project, "id" | "created_at">) => {
         const newProject: Project = {
@@ -185,6 +201,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
             ...reminderData,
             id: uuidv4(),
             reminder_sent: false,
+            isAlarm: reminderData.isAlarm || false,
             created_at: new Date().toISOString(),
         };
         setReminders((prev) => [...prev, newReminder]);
@@ -211,12 +228,13 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
         setReminders((prev) => prev.filter((r) => r.id !== id));
     };
 
-    const addTask = (taskData: Omit<Task, "id" | "status" | "reminder_sent" | "created_at"> & { status?: Status }) => {
+    const addTask = (taskData: Omit<Task, "id" | "status" | "reminder_sent" | "created_at" | "isAlarm"> & { status?: Status, isAlarm?: boolean }) => {
         const newTask: Task = {
             ...taskData,
             id: uuidv4(),
             status: taskData.status || "pending",
             reminder_sent: false,
+            isAlarm: taskData.isAlarm || false,
             created_at: new Date().toISOString(),
         };
         setTasks((prev) => [...prev, newTask]);
@@ -317,6 +335,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                                 body: task.description || (task.due_date ? `Due: ${new Date(task.due_date).toLocaleDateString()}` : "Task is due!"),
                                 tag: task.id,
                                 requireInteraction: true,
+                                isAlarm: task.isAlarm && alarmEnabledRef.current
                             });
                         }
 
@@ -355,6 +374,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                                 body: `Scheduled for ${reminder.date}${reminder.time ? ` at ${reminder.time}` : ""}`,
                                 tag: reminder.id,
                                 requireInteraction: true,
+                                isAlarm: reminder.isAlarm && alarmEnabledRef.current
                             });
                         }
                     }
@@ -391,6 +411,8 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                 setUserName,
                 notificationsEnabled,
                 setNotificationsEnabled,
+                alarmEnabled,
+                setAlarmEnabled,
             }}
         >
             {children}
