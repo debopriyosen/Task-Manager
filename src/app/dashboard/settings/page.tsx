@@ -58,6 +58,17 @@ export default function SettingsPage() {
         }
     };
 
+    const handleRegisterSW = async () => {
+        if ('serviceWorker' in navigator) {
+            try {
+                await navigator.serviceWorker.register('/sw.js');
+                window.location.reload();
+            } catch (err) {
+                console.error("SW Registration failed:", err);
+            }
+        }
+    };
+
     const handleToggleNotifications = async () => {
         if (!notificationsEnabled) {
             const permission = await requestNotificationPermission();
@@ -189,15 +200,23 @@ export default function SettingsPage() {
                                     New Version Ready - Tap to Activate
                                 </button>
                             )}
+                            {swStatus === "none" && (
+                                <button
+                                    onClick={handleRegisterSW}
+                                    className="mt-2 w-fit text-[10px] font-bold bg-amber-600 text-white px-3 py-1 rounded-full uppercase tracking-wider shadow-sm shadow-amber-500/20"
+                                >
+                                    Fix Engine - Tap to Register
+                                </button>
+                            )}
                         </div>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30">
-                        <h3 className="text-xs font-semibold text-amber-800 dark:text-amber-400 uppercase tracking-wider mb-2">Mobile Troubleshooting</h3>
-                        <ul className="text-xs text-amber-700 dark:text-amber-500 space-y-2 list-disc pl-4">
-                            <li><strong>iOS Users:</strong> You MUST tap <strong>"Add to Home Screen"</strong> in Safari for notifications to work.</li>
-                            <li><strong>Backgrounding:</strong> On mobile, notifications work best when the app is active or "pinned" to your home screen.</li>
-                            <li><strong>Permissions:</strong> Ensure "Notifications" are enabled for this app in your phone's system settings.</li>
+                    <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800">
+                        <h3 className="text-xs font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">Android & iOS Setup</h3>
+                        <ul className="text-[11px] text-slate-600 dark:text-slate-400 space-y-2 list-disc pl-4">
+                            <li><strong>Important:</strong> You must <strong>"Add to Home Screen"</strong> for background notifications to be reliable.</li>
+                            <li><strong>Permissions:</strong> If it says "default", toggle the Push Notifications switch above.</li>
+                            <li><strong>Backgrounding:</strong> Ensure your phone has not "restricted" battery usage for this app in system settings.</li>
                         </ul>
                     </div>
 
