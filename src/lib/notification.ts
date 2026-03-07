@@ -21,40 +21,62 @@ export const requestNotificationPermission = async (): Promise<NotificationPermi
 };
 
 export const showNotification = (title: string, options?: NotificationOptions) => {
-    if (!("Notification" in window)) return;
+    console.log("showNotification called with:", title, options);
 
-    if (Notification.permission === "granted") {
+    const isNotificationSupported = "Notification" in window;
+    const isServiceWorkerSupported = "serviceWorker" in navigator;
+
+    if (!isNotificationSupported && !isServiceWorkerSupported) {
+        console.warn("Notifications not supported in this browser");
+        return;
+    }
+
+    const permission = isNotificationSupported ? Notification.permission : "granted"; // Fallback for SW-only
+
+    if (permission === "granted" || (isNotificationSupported && Notification.permission === "granted")) {
         const showLocal = () => {
-            new Notification(title, {
-                icon: "/icon-192x192.png",
-                ...options,
-            });
+            if (isNotificationSupported) {
+                console.log("Showing local legacy notification");
+                try {
+                    new Notification(title, {
+                        icon: "/icon-192x192.png",
+                        ...options,
+                    });
+                } catch (e) {
+                    console.error("Local notification failed:", e);
+                }
+            }
         };
 
         try {
             // Check if service worker is available to show notification (better for PWA)
-            if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+            if (isServiceWorkerSupported && navigator.serviceWorker.controller) {
+                console.log("Attempting service worker notification");
                 navigator.serviceWorker.ready.then((registration) => {
+                    console.log("Service worker ready, showing notification");
                     registration.showNotification(title, {
                         icon: "/icon-192x192.png",
                         badge: "/icon-192x192.png",
                         vibrate: [200, 100, 200],
                         ...options,
-                    } as any).catch(() => {
-                        // Fallback if SW showNotification fails
+                    } as any).catch((err) => {
+                        console.error("SW showNotification failed:", err);
                         showLocal();
                     });
-                }).catch(() => {
-                    // Fallback if SW ready fails
+                }).catch((err) => {
+                    console.error("SW ready failed:", err);
                     showLocal();
                 });
             } else {
+                console.log("No service worker controller, using local fallback");
                 showLocal();
             }
         } catch (error) {
-            console.error("Error showing notification:", error);
+            console.error("Error in showNotification try/catch:", error);
             showLocal();
         }
+    } else {
+        console.warn("Notification permission not granted:", permission);
     }
 };
 

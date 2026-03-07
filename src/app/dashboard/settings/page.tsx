@@ -1,7 +1,7 @@
 "use client";
 
 import { useTasks } from "@/contexts/TasksContext";
-import { Mail, Save, User, Bell, BellOff } from "lucide-react";
+import { Mail, Save, User, Bell, BellOff, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { requestNotificationPermission, checkNotificationPermission, showNotification } from "@/lib/notification";
 
@@ -12,6 +12,7 @@ export default function SettingsPage() {
     const [saved, setSaved] = useState(false);
     const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
     const [isStandalone, setIsStandalone] = useState(true);
+    const [testState, setTestState] = useState<"idle" | "sending" | "sent">("idle");
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -40,10 +41,18 @@ export default function SettingsPage() {
     };
 
     const handleTestNotification = () => {
-        showNotification("Test Notification", {
-            body: "This is a test notification from Planora. If you see this, your permissions are set up correctly!",
-            icon: "/icon-192x192.png",
-        });
+        setTestState("sending");
+        try {
+            showNotification("Test Notification", {
+                body: "This is a test notification from Planora. If you see this, your permissions are set up correctly!",
+                icon: "/icon-192x192.png",
+            });
+            setTimeout(() => setTestState("sent"), 500);
+            setTimeout(() => setTestState("idle"), 3000);
+        } catch (e) {
+            console.error(e);
+            setTestState("idle");
+        }
     };
 
     useEffect(() => {
@@ -122,14 +131,18 @@ export default function SettingsPage() {
                         </button>
                     </div>
 
-                    <div className="flex justify-start">
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={handleTestNotification}
-                            disabled={notificationPermission !== "granted" || !notificationsEnabled}
-                            className="text-xs font-medium text-primary-600 hover:text-primary-700 bg-primary-50 dark:bg-primary-900/20 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                            disabled={notificationPermission !== "granted" || !notificationsEnabled || testState !== "idle"}
+                            className="text-xs font-medium text-primary-600 hover:text-primary-700 bg-primary-50 dark:bg-primary-900/20 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
                         >
-                            Send Test Notification
+                            {testState === "sending" && <Loader2 size={12} className="animate-spin" />}
+                            {testState === "sent" ? "Sent!" : "Send Test Notification"}
                         </button>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                            Status: {notificationPermission}
+                        </span>
                     </div>
 
                     <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30">
