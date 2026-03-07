@@ -1,14 +1,40 @@
 "use client";
 
 import { useTasks } from "@/contexts/TasksContext";
-import { Mail, Save, User } from "lucide-react";
+import { Mail, Save, User, Bell, BellOff } from "lucide-react";
 import { useState, useEffect } from "react";
+import { requestNotificationPermission, checkNotificationPermission, showNotification } from "@/lib/notification";
 
 export default function SettingsPage() {
-    const { userEmail, setUserEmail, userName, setUserName } = useTasks();
+    const { userEmail, setUserEmail, userName, setUserName, notificationsEnabled, setNotificationsEnabled } = useTasks();
     const [emailInput, setEmailInput] = useState("");
     const [nameInput, setNameInput] = useState("");
     const [saved, setSaved] = useState(false);
+    const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            setNotificationPermission(checkNotificationPermission());
+        }
+    }, []);
+
+    const handleToggleNotifications = async () => {
+        if (notificationPermission === "granted") {
+            // Browsers don't allow "revoking" permission programmatically easily, 
+            // but we can show a message or just leave it.
+            // For now, if they click it when granted, we'll just keep it granted.
+            return;
+        }
+
+        const permission = await requestNotificationPermission();
+        setNotificationPermission(permission);
+        if (permission === "granted") {
+            showNotification("Notifications Enabled", {
+                body: "You will now receive smart reminders for your tasks.",
+                icon: "/icon-192x192.png"
+            });
+        }
+    };
 
     useEffect(() => {
         setEmailInput(userEmail);
@@ -46,6 +72,36 @@ export default function SettingsPage() {
                             placeholder="e.g., Jane Doe"
                         />
                     </div>
+                </div>
+
+                <h2 className="text-lg font-semibold mb-6 flex items-center gap-2 pt-6 border-t border-border">
+                    <Bell size={20} className="text-primary-500" />
+                    Browser Notifications
+                </h2>
+
+                <div className="space-y-4 mb-8">
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-background border border-border shadow-sm">
+                        <div className="space-y-0.5">
+                            <p className="text-sm font-medium">Push Notifications</p>
+                            <p className="text-xs text-muted-foreground">Receive real-time alerts for your tasks and reminders.</p>
+                        </div>
+                        <button
+                            onClick={handleToggleNotifications}
+                            disabled={notificationPermission === "denied"}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${notificationsEnabled && notificationPermission === "granted" ? "bg-primary-600" : "bg-slate-200 dark:bg-slate-700"
+                                } ${notificationPermission === "denied" ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                        >
+                            <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notificationsEnabled && notificationPermission === "granted" ? "translate-x-6" : "translate-x-1"
+                                    }`}
+                            />
+                        </button>
+                    </div>
+                    {notificationPermission === "denied" && (
+                        <p className="text-xs text-red-500 font-medium">
+                            Notifications are blocked by your browser. Please enable them in your browser settings.
+                        </p>
+                    )}
                 </div>
 
                 <h2 className="text-lg font-semibold mb-6 flex items-center gap-2 pt-6 border-t border-border">

@@ -5,8 +5,6 @@ import { useEffect, useState, useRef } from "react";
 import { useTasks } from "@/contexts/TasksContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, BellOff } from "lucide-react";
-import { requestNotificationPermission, checkNotificationPermission } from "@/lib/notification";
 
 interface TopbarProps {
     onOpenSidebar: () => void;
@@ -19,19 +17,10 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
-    const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
 
     useEffect(() => {
         setMounted(true);
-        if (typeof window !== "undefined") {
-            setNotificationPermission(checkNotificationPermission());
-        }
     }, []);
-
-    const handleRequestPermission = async () => {
-        const permission = await requestNotificationPermission();
-        setNotificationPermission(permission);
-    };
 
     useEffect(() => {
         setMounted(true);
@@ -151,19 +140,6 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
             </div>
 
             <div className="flex items-center gap-3">
-                {mounted && (
-                    <button
-                        onClick={handleRequestPermission}
-                        className={`p-2 rounded-full transition-all duration-300 ${notificationPermission === "granted"
-                            ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400"
-                            : "bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/40"
-                            }`}
-                        title={notificationPermission === "granted" ? "Notifications Enabled" : "Enable Notifications"}
-                    >
-                        {notificationPermission === "granted" ? <Bell size={18} /> : <BellOff size={18} />}
-                    </button>
-                )}
-
                 <Link href="/dashboard/settings">
                     <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-medium text-sm cursor-pointer border border-blue-200 hover:ring-2 hover:ring-offset-2 hover:ring-blue-500 transition-all">
                         {userName ? userName.charAt(0).toUpperCase() : "U"}

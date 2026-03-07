@@ -28,6 +28,7 @@ export interface Reminder {
     date: string; // ISO date format for the day it's scheduled
     time?: string; // Optional time of day 09:00
     color: string;
+    reminder_sent?: boolean;
     created_at: string;
 }
 
@@ -67,6 +68,8 @@ interface TasksContextType {
     setUserEmail: (email: string) => void;
     userName: string;
     setUserName: (name: string) => void;
+    notificationsEnabled: boolean;
+    setNotificationsEnabled: (enabled: boolean) => void;
 }
 
 const TasksContext = createContext<TasksContextType | undefined>(undefined);
@@ -77,6 +80,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [userEmail, setUserEmail] = useState<string>("user@example.com");
     const [userName, setUserName] = useState<string>("User");
+    const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Load from LocalStorage
@@ -118,6 +122,11 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
             setUserName(savedName);
         }
 
+        const savedNotifications = localStorage.getItem("taskflow_notifications");
+        if (savedNotifications !== null) {
+            setNotificationsEnabled(savedNotifications === "true");
+        }
+
         setIsLoaded(true);
     }, []);
 
@@ -129,8 +138,9 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("taskflow_tasks", JSON.stringify(tasks));
             localStorage.setItem("taskflow_email", userEmail);
             localStorage.setItem("taskflow_name", userName);
+            localStorage.setItem("taskflow_notifications", String(notificationsEnabled));
         }
-    }, [projects, reminders, tasks, userEmail, userName, isLoaded]);
+    }, [projects, reminders, tasks, userEmail, userName, notificationsEnabled, isLoaded]);
 
     const addProject = (projectData: Omit<Project, "id" | "created_at">) => {
         const newProject: Project = {
@@ -157,6 +167,7 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
         const newReminder: Reminder = {
             ...reminderData,
             id: uuidv4(),
+            reminder_sent: false,
             created_at: new Date().toISOString(),
         };
         setReminders((prev) => [...prev, newReminder]);
@@ -164,7 +175,18 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
 
     const updateReminder = (id: string, updates: Partial<Reminder>) => {
         setReminders((prev) =>
-            prev.map((r) => (r.id === id ? { ...r, ...updates } : r))
+            prev.map((r) => {
+                if (r.id === id) {
+                    // Reset sent flag if date or time changes
+                    const hasTimeChange = updates.date !== undefined || updates.time !== undefined;
+                    return {
+                        ...r,
+                        ...updates,
+                        reminder_sent: hasTimeChange ? false : (updates.reminder_sent ?? r.reminder_sent)
+                    };
+                }
+                return r;
+            })
         );
     };
 
@@ -265,13 +287,19 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                         // Mark as sent immediately to prevent duplicates
                         updateTask(task.id, { reminder_sent: true });
 
-                        try {
-                            // 1. Show local browser notification (Free/Smart)
-                            showNotification(`Reminder: ${task.title}`, {
-                                body: task.description || (task.due_date ? `Due: ${new Date(task.due_date).toLocaleDateString()}` : "Task is due!"),
-                                tag: task.id,
-                            });
+                        if (notificationsEnabled) {
+                            try {
+                                // 1. Show local browser notification (Free/Smart)
+                                showNotification(`Reminder: ${task.title}`, {
+                                    body: task.description || (task.due_date ? `Due: ${new Date(task.due_date).toLocaleDateString()}` : "Task is due!"),
+                                    tag: task.id,
+                                });
+                            } catch (e) {
+                                console.error("Notification failed", e);
+                            }
+                        }
 
+                        try {
                             // 2. Send the email (Existing)
                             await fetch("/api/reminders/send", {
                                 method: "POST",
@@ -291,7 +319,28 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                     }
                 }
             });
-        }, 60000); // Check every minute
+
+            // 3. Check specific calendar reminders
+            reminders.forEach(async (reminder) => {
+                if (!reminder.reminder_sent && reminder.date) {
+                    const reminderDateTime = reminder.time
+                        ? new Date(`${reminder.date}T${reminder.time}`)
+                        : new Date(`${reminder.date}T00:00:00`);
+
+                    if (now >= reminderDateTime) {
+                        // Mark as sent
+                        updateReminder(reminder.id, { reminder_sent: true });
+
+                        if (notificationsEnabled) {
+                            showNotification(`Upcoming: ${reminder.title}`, {
+                                body: `Scheduled for ${reminder.date}${reminder.time ? ` at ${reminder.time}` : ""}`,
+                                tag: reminder.id,
+                            });
+                        }
+                    }
+                }
+            });
+        }, 30000); // Check every 30 seconds for better responsiveness
 
         return () => clearInterval(interval);
     }, [tasks, isLoaded, userEmail]);
@@ -317,6 +366,8 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                 setUserEmail,
                 userName,
                 setUserName,
+                notificationsEnabled,
+                setNotificationsEnabled,
             }}
         >
             {children}

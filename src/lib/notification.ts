@@ -24,6 +24,13 @@ export const showNotification = (title: string, options?: NotificationOptions) =
     if (!("Notification" in window)) return;
 
     if (Notification.permission === "granted") {
+        const showLocal = () => {
+            new Notification(title, {
+                icon: "/icon-192x192.png",
+                ...options,
+            });
+        };
+
         try {
             // Check if service worker is available to show notification (better for PWA)
             if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
@@ -32,16 +39,20 @@ export const showNotification = (title: string, options?: NotificationOptions) =
                         icon: "/icon-192x192.png",
                         badge: "/icon-192x192.png",
                         ...options,
+                    }).catch(() => {
+                        // Fallback if SW showNotification fails
+                        showLocal();
                     });
+                }).catch(() => {
+                    // Fallback if SW ready fails
+                    showLocal();
                 });
             } else {
-                new Notification(title, {
-                    icon: "/icon-192x192.png",
-                    ...options,
-                });
+                showLocal();
             }
         } catch (error) {
             console.error("Error showing notification:", error);
+            showLocal();
         }
     }
 };
