@@ -13,7 +13,8 @@ export default function SettingsPage() {
     const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
     const [isStandalone, setIsStandalone] = useState(true);
     const [hasSW, setHasSW] = useState(false);
-    const [swStatus, setSwStatus] = useState<"ready" | "waiting" | "none">("none");
+    const [swStatus, setSwStatus] = useState<"ready" | "waiting" | "none" | "blocked">("none");
+    const [swError, setSwError] = useState<string | null>(null);
     const [testState, setTestState] = useState<"idle" | "sending" | "sent">("idle");
 
     useEffect(() => {
@@ -36,6 +37,9 @@ export default function SettingsPage() {
                         setHasSW(false);
                         setSwStatus("none");
                     }
+                } else {
+                    setHasSW(false);
+                    setSwStatus("blocked");
                 }
             };
 
@@ -60,11 +64,17 @@ export default function SettingsPage() {
 
     const handleRegisterSW = async () => {
         if ('serviceWorker' in navigator) {
+            setSwError(null);
             try {
-                await navigator.serviceWorker.register('/sw.js');
+                const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+                console.log("SW Registration success:", reg);
                 window.location.reload();
-            } catch (err) {
+            } catch (err: any) {
                 console.error("SW Registration failed:", err);
+                setSwError(err.message || "Failed to register. Check HTTPS.");
+                if (err.name === "SecurityError") {
+                    setSwStatus("blocked");
+                }
             }
         }
     };
@@ -207,6 +217,21 @@ export default function SettingsPage() {
                                 >
                                     Fix Engine - Tap to Register
                                 </button>
+                            )}
+                            {swError && (
+                                <p className="mt-1 text-[10px] font-medium text-red-500 italic">
+                                    Error: {swError}
+                                </p>
+                            )}
+                            {swStatus === "blocked" && (
+                                <div className="mt-2 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30">
+                                    <p className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">
+                                        ❌ Engine Blocked (Security)
+                                    </p>
+                                    <p className="text-[10px] text-red-500 mt-1 leading-relaxed">
+                                        Mobile browsers block notifications on HTTP. Use <strong>HTTPS</strong> or your <strong>Localhost</strong> link.
+                                    </p>
+                                </div>
                             )}
                         </div>
                     </div>
