@@ -19,20 +19,18 @@ export default function SettingsPage() {
     }, []);
 
     const handleToggleNotifications = async () => {
-        if (notificationPermission === "granted") {
-            // Browsers don't allow "revoking" permission programmatically easily, 
-            // but we can show a message or just leave it.
-            // For now, if they click it when granted, we'll just keep it granted.
-            return;
-        }
-
-        const permission = await requestNotificationPermission();
-        setNotificationPermission(permission);
-        if (permission === "granted") {
-            showNotification("Notifications Enabled", {
-                body: "You will now receive smart reminders for your tasks.",
-                icon: "/icon-192x192.png"
-            });
+        if (!notificationsEnabled) {
+            const permission = await requestNotificationPermission();
+            setNotificationPermission(permission);
+            if (permission === "granted") {
+                setNotificationsEnabled(true);
+                showNotification("Notifications Enabled", {
+                    body: "You will now receive smart reminders for your tasks.",
+                    icon: "/icon-192x192.png"
+                });
+            }
+        } else {
+            setNotificationsEnabled(false);
         }
     };
 

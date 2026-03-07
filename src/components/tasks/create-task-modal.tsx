@@ -86,7 +86,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                 priority,
                 projectId: finalProjectId,
                 due_date: dueDate ? new Date(dueDate).toISOString() : undefined,
-                reminder_time: reminderTime || taskToEdit.reminder_time,
+                reminder_time: reminderTime || (reminderOffset === "none" ? undefined : taskToEdit.reminder_time),
                 subtasks: formattedSubtasks,
                 status,
             });
