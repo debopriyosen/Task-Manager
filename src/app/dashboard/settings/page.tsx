@@ -11,10 +11,15 @@ export default function SettingsPage() {
     const [nameInput, setNameInput] = useState("");
     const [saved, setSaved] = useState(false);
     const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
+    const [isStandalone, setIsStandalone] = useState(true);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
             setNotificationPermission(checkNotificationPermission());
+            setIsStandalone(
+                window.matchMedia('(display-mode: standalone)').matches ||
+                (window.navigator as any).standalone === true
+            );
         }
     }, []);
 
@@ -32,6 +37,13 @@ export default function SettingsPage() {
         } else {
             setNotificationsEnabled(false);
         }
+    };
+
+    const handleTestNotification = () => {
+        showNotification("Test Notification", {
+            body: "This is a test notification from Planora. If you see this, your permissions are set up correctly!",
+            icon: "/icon-192x192.png",
+        });
     };
 
     useEffect(() => {
@@ -77,6 +89,20 @@ export default function SettingsPage() {
                     Browser Notifications
                 </h2>
 
+                {!isStandalone && (
+                    <div className="mb-6 p-4 rounded-xl bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-900/30 flex items-start gap-3">
+                        <div className="p-2 bg-primary-100 dark:bg-primary-900/40 rounded-lg text-primary-600 dark:text-primary-400">
+                            <Bell size={18} />
+                        </div>
+                        <div>
+                            <p className="text-sm font-semibold text-primary-900 dark:text-primary-100">Better Notifications on Mobile</p>
+                            <p className="text-xs text-primary-700 dark:text-primary-300 mt-1">
+                                For reliable reminders on your phone, tap <strong>"Add to Home Screen"</strong> in your browser menu.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 <div className="space-y-4 mb-8">
                     <div className="flex items-center justify-between p-4 rounded-xl bg-background border border-border shadow-sm">
                         <div className="space-y-0.5">
@@ -95,6 +121,26 @@ export default function SettingsPage() {
                             />
                         </button>
                     </div>
+
+                    <div className="flex justify-start">
+                        <button
+                            onClick={handleTestNotification}
+                            disabled={notificationPermission !== "granted" || !notificationsEnabled}
+                            className="text-xs font-medium text-primary-600 hover:text-primary-700 bg-primary-50 dark:bg-primary-900/20 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                            Send Test Notification
+                        </button>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30">
+                        <h3 className="text-xs font-semibold text-amber-800 dark:text-amber-400 uppercase tracking-wider mb-2">Mobile Troubleshooting</h3>
+                        <ul className="text-xs text-amber-700 dark:text-amber-500 space-y-2 list-disc pl-4">
+                            <li><strong>iOS Users:</strong> You MUST tap <strong>"Add to Home Screen"</strong> in Safari for notifications to work.</li>
+                            <li><strong>Backgrounding:</strong> On mobile, notifications work best when the app is active or "pinned" to your home screen.</li>
+                            <li><strong>Permissions:</strong> Ensure "Notifications" are enabled for this app in your phone's system settings.</li>
+                        </ul>
+                    </div>
+
                     {notificationPermission === "denied" && (
                         <p className="text-xs text-red-500 font-medium">
                             Notifications are blocked by your browser. Please enable them in your browser settings.

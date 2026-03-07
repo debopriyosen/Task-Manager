@@ -38,8 +38,9 @@ export const showNotification = (title: string, options?: NotificationOptions) =
                     registration.showNotification(title, {
                         icon: "/icon-192x192.png",
                         badge: "/icon-192x192.png",
+                        vibrate: [200, 100, 200],
                         ...options,
-                    }).catch(() => {
+                    } as any).catch(() => {
                         // Fallback if SW showNotification fails
                         showLocal();
                     });
