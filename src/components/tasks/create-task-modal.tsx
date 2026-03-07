@@ -38,7 +38,20 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                 } else {
                     setDueDate("");
                 }
-                setReminderOffset("none");
+                // Initialize reminder offset based on time difference
+                if (taskToEdit.due_date && taskToEdit.reminder_time) {
+                    const due = new Date(taskToEdit.due_date).getTime();
+                    const rem = new Date(taskToEdit.reminder_time).getTime();
+                    const diffMin = Math.round((due - rem) / 60000);
+
+                    if (diffMin === 10) setReminderOffset("10m");
+                    else if (diffMin === 60) setReminderOffset("1h");
+                    else if (diffMin === 1440) setReminderOffset("1d");
+                    else setReminderOffset("none");
+                } else {
+                    setReminderOffset("none");
+                }
+
                 setProjectId(taskToEdit.projectId || "none");
                 setSubtasks(taskToEdit.subtasks);
                 setStatus(taskToEdit.status);
