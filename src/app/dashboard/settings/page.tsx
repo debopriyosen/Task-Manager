@@ -13,6 +13,7 @@ export default function SettingsPage() {
     const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
     const [isStandalone, setIsStandalone] = useState(true);
     const [hasSW, setHasSW] = useState(false);
+    const [swStatus, setSwStatus] = useState<"ready" | "waiting" | "none">("none");
     const [testState, setTestState] = useState<"idle" | "sending" | "sent">("idle");
 
     useEffect(() => {
@@ -22,9 +23,40 @@ export default function SettingsPage() {
                 window.matchMedia('(display-mode: standalone)').matches ||
                 (window.navigator as any).standalone === true
             );
-            setHasSW('serviceWorker' in navigator && !!navigator.serviceWorker.controller);
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistration().then(reg => {
+                    if (reg) {
+                        setHasSW(true);
+                        if (reg.waiting) setSwStatus("waiting");
+                        else if (reg.active) setSwStatus("ready");
+
+                        // Listen for updates
+                        reg.addEventListener('updatefound', () => {
+                            const newSW = reg.installing;
+                            if (newSW) {
+                                newSW.addEventListener('statechange', () => {
+                                    if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+                                        setSwStatus("waiting");
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
         }
     }, []);
+
+    const handleActivateSW = async () => {
+        if ('serviceWorker' in navigator) {
+            const reg = await navigator.serviceWorker.getRegistration();
+            if (reg?.waiting) {
+                reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                window.location.reload();
+            }
+        }
+    };
 
     const handleToggleNotifications = async () => {
         if (!notificationsEnabled) {
@@ -147,8 +179,16 @@ export default function SettingsPage() {
                                 Permission: {notificationPermission}
                             </span>
                             <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                                App Mode: {isStandalone ? "Installed" : "Browser"} | SW: {hasSW ? "Ready" : "Waiting"}
+                                App Mode: {isStandalone ? "Installed" : "Browser"} | SW: {swStatus}
                             </span>
+                            {swStatus === "waiting" && (
+                                <button
+                                    onClick={handleActivateSW}
+                                    className="mt-2 w-fit text-[10px] font-bold bg-indigo-600 text-white px-3 py-1 rounded-full animate-pulse uppercase tracking-wider shadow-sm shadow-indigo-500/20"
+                                >
+                                    New Version Ready - Tap to Activate
+                                </button>
+                            )}
                         </div>
                     </div>
 
