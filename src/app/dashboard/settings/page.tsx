@@ -24,26 +24,26 @@ export default function SettingsPage() {
                 (window.navigator as any).standalone === true
             );
 
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistration().then(reg => {
+            const checkSW = async () => {
+                if ('serviceWorker' in navigator) {
+                    const reg = await navigator.serviceWorker.getRegistration();
                     if (reg) {
                         setHasSW(true);
                         if (reg.waiting) setSwStatus("waiting");
                         else if (reg.active) setSwStatus("ready");
-
-                        // Listen for updates
-                        reg.addEventListener('updatefound', () => {
-                            const newSW = reg.installing;
-                            if (newSW) {
-                                newSW.addEventListener('statechange', () => {
-                                    if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-                                        setSwStatus("waiting");
-                                    }
-                                });
-                            }
-                        });
+                        else setSwStatus("none");
+                    } else {
+                        setHasSW(false);
+                        setSwStatus("none");
                     }
-                });
+                }
+            };
+
+            checkSW();
+
+            // Listen for changes
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.addEventListener('controllerchange', checkSW);
             }
         }
     }, []);

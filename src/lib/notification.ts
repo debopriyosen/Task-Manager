@@ -56,14 +56,20 @@ export const showNotification = (title: string, options?: NotificationOptions) =
             console.log("Attempting service worker notification via .ready");
             try {
                 const registration = await navigator.serviceWorker.ready;
-                console.log("Service worker ready, showing notification");
-                await registration.showNotification(title, {
-                    icon: "/icon-192x192.png",
-                    badge: "/icon-192x192.png",
-                    vibrate: [200, 100, 200],
-                    ...options,
-                } as any);
-                console.log("registration.showNotification executed");
+                if (registration && registration.showNotification) {
+                    console.log("Showing notification via Service Worker");
+                    await registration.showNotification(title, {
+                        icon: "/icon-192x192.png",
+                        badge: "/icon-192x192.png",
+                        vibrate: [200, 100, 200],
+                        ...options,
+                    } as any);
+                    console.log("registration.showNotification executed");
+                    return;
+                }
+                // Fallback if service worker registration or showNotification is not available
+                console.log("Service worker not ready or showNotification not available. Falling back to local Notification constructor.");
+                showLocal();
             } catch (err) {
                 console.error("SW notification failed:", err);
                 showLocal();
