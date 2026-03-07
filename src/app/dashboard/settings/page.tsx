@@ -12,6 +12,7 @@ export default function SettingsPage() {
     const [saved, setSaved] = useState(false);
     const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>("default");
     const [isStandalone, setIsStandalone] = useState(true);
+    const [hasSW, setHasSW] = useState(false);
     const [testState, setTestState] = useState<"idle" | "sending" | "sent">("idle");
 
     useEffect(() => {
@@ -21,6 +22,7 @@ export default function SettingsPage() {
                 window.matchMedia('(display-mode: standalone)').matches ||
                 (window.navigator as any).standalone === true
             );
+            setHasSW('serviceWorker' in navigator && !!navigator.serviceWorker.controller);
         }
     }, []);
 
@@ -140,9 +142,14 @@ export default function SettingsPage() {
                             {testState === "sending" && <Loader2 size={12} className="animate-spin" />}
                             {testState === "sent" ? "Sent!" : "Send Test Notification"}
                         </button>
-                        <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                            Status: {notificationPermission}
-                        </span>
+                        <div className="flex flex-col gap-0.5">
+                            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                                Permission: {notificationPermission}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                                App Mode: {isStandalone ? "Installed" : "Browser"} | SW: {hasSW ? "Ready" : "Waiting"}
+                            </span>
+                        </div>
                     </div>
 
                     <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30">

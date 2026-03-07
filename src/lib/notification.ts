@@ -23,58 +23,61 @@ export const requestNotificationPermission = async (): Promise<NotificationPermi
 export const showNotification = (title: string, options?: NotificationOptions) => {
     console.log("showNotification called with:", title, options);
 
-    const isNotificationSupported = "Notification" in window;
-    const isServiceWorkerSupported = "serviceWorker" in navigator;
+    const isNotificationSupported = typeof window !== 'undefined' && "Notification" in window;
+    const isServiceWorkerSupported = typeof window !== 'undefined' && "serviceWorker" in navigator;
 
     if (!isNotificationSupported && !isServiceWorkerSupported) {
         console.warn("Notifications not supported in this browser");
         return;
     }
 
-    const permission = isNotificationSupported ? Notification.permission : "granted"; // Fallback for SW-only
+    // On iOS Safari, window.Notification exists but new Notification() is not supported.
+    // It ONLY works via ServiceWorkerRegistration.showNotification()
+    const isIOS = typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-    if (permission === "granted" || (isNotificationSupported && Notification.permission === "granted")) {
-        const showLocal = () => {
-            if (isNotificationSupported) {
-                console.log("Showing local legacy notification");
-                try {
-                    new Notification(title, {
-                        icon: "/icon-192x192.png",
-                        ...options,
-                    });
-                } catch (e) {
-                    console.error("Local notification failed:", e);
-                }
-            }
-        };
-
-        try {
-            // Check if service worker is available to show notification (better for PWA)
-            if (isServiceWorkerSupported && navigator.serviceWorker.controller) {
-                console.log("Attempting service worker notification");
-                navigator.serviceWorker.ready.then((registration) => {
-                    console.log("Service worker ready, showing notification");
-                    registration.showNotification(title, {
-                        icon: "/icon-192x192.png",
-                        badge: "/icon-192x192.png",
-                        vibrate: [200, 100, 200],
-                        ...options,
-                    } as any).catch((err) => {
-                        console.error("SW showNotification failed:", err);
-                        showLocal();
-                    });
-                }).catch((err) => {
-                    console.error("SW ready failed:", err);
-                    showLocal();
+    const showLocal = () => {
+        if (isNotificationSupported && !isIOS) {
+            console.log("Showing local legacy notification");
+            try {
+                new Notification(title, {
+                    icon: "/icon-192x192.png",
+                    ...options,
                 });
-            } else {
-                console.log("No service worker controller, using local fallback");
+            } catch (e) {
+                console.error("Local notification failed:", e);
+            }
+        } else {
+            console.log("Local legacy notification not supported or is iOS, skipping local fallback");
+        }
+    };
+
+    const attemptSWNotification = async () => {
+        if (isServiceWorkerSupported) {
+            console.log("Attempting service worker notification via .ready");
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                console.log("Service worker ready, showing notification");
+                await registration.showNotification(title, {
+                    icon: "/icon-192x192.png",
+                    badge: "/icon-192x192.png",
+                    vibrate: [200, 100, 200],
+                    ...options,
+                } as any);
+                console.log("registration.showNotification executed");
+            } catch (err) {
+                console.error("SW notification failed:", err);
                 showLocal();
             }
-        } catch (error) {
-            console.error("Error in showNotification try/catch:", error);
+        } else {
+            console.log("Service workers not supported, falling back to local");
             showLocal();
         }
+    };
+
+    const permission = isNotificationSupported ? Notification.permission : "granted";
+
+    if (permission === "granted") {
+        attemptSWNotification();
     } else {
         console.warn("Notification permission not granted:", permission);
     }
