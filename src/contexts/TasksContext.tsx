@@ -83,6 +83,23 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
     const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
     const [isLoaded, setIsLoaded] = useState(false);
 
+    // Refs to avoid stale closures in setInterval
+    const tasksRef = React.useRef<Task[]>([]);
+    const remindersRef = React.useRef<Reminder[]>([]);
+    const notificationsEnabledRef = React.useRef<boolean>(true);
+
+    useEffect(() => {
+        tasksRef.current = tasks;
+    }, [tasks]);
+
+    useEffect(() => {
+        remindersRef.current = reminders;
+    }, [reminders]);
+
+    useEffect(() => {
+        notificationsEnabledRef.current = notificationsEnabled;
+    }, [notificationsEnabled]);
+
     // Load from LocalStorage
     useEffect(() => {
         const savedProjects = localStorage.getItem("taskflow_projects");
@@ -273,35 +290,39 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
         );
     };
 
-    // Reminder Checker (Client-Side Polling)
+    // Reminder Checker (Client-Side Polling) - Refactored for stability
     useEffect(() => {
-        if (!isLoaded || tasks.length === 0) return;
+        if (!isLoaded) return;
 
+        console.log("Starting active reminder polling...");
         const interval = setInterval(() => {
             const now = new Date();
+            const currentTasks = tasksRef.current;
+            const currentReminders = remindersRef.current;
 
-            tasks.forEach(async (task) => {
+            // 1. Check Tasks
+            currentTasks.forEach(async (task) => {
                 if (!task.reminder_sent && task.reminder_time && task.status !== "completed") {
-                    const reminderTime = new Date(task.reminder_time);
-                    if (now >= reminderTime) {
-                        // Mark as sent immediately to prevent duplicates
+                    const reminderDate = new Date(task.reminder_time);
+
+                    // Logic: If current time is past or within 2 seconds of reminder time
+                    if (now >= reminderDate) {
+                        console.log(`Triggering reminder for task: ${task.title} (Scheduled: ${task.reminder_time})`);
+
+                        // Mark as sent immediately in the state
                         updateTask(task.id, { reminder_sent: true });
 
-                        if (notificationsEnabled) {
-                            try {
-                                // 1. Show local browser notification (Free/Smart)
-                                showNotification(`Reminder: ${task.title}`, {
-                                    body: task.description || (task.due_date ? `Due: ${new Date(task.due_date).toLocaleDateString()}` : "Task is due!"),
-                                    tag: task.id,
-                                });
-                            } catch (e) {
-                                console.error("Notification failed", e);
-                            }
+                        if (notificationsEnabledRef.current) {
+                            showNotification(`Reminder: ${task.title}`, {
+                                body: task.description || (task.due_date ? `Due: ${new Date(task.due_date).toLocaleDateString()}` : "Task is due!"),
+                                tag: task.id,
+                                requireInteraction: true,
+                            });
                         }
 
+                        // Also send email
                         try {
-                            // 2. Send the email (Existing)
-                            await fetch("/api/reminders/send", {
+                            fetch("/api/reminders/send", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({
@@ -311,39 +332,41 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                                     priority: task.priority,
                                 }),
                             });
-                            console.log(`Reminder sent for task: ${task.title}`);
                         } catch (error) {
-                            console.error("Failed to send reminder via API", error);
-                            // Revert if API failed so we try again? For now just log.
+                            console.error("Failed to send email reminder", error);
                         }
                     }
                 }
             });
 
-            // 3. Check specific calendar reminders
-            reminders.forEach(async (reminder) => {
+            // 2. Check Calendar Reminders
+            currentReminders.forEach(async (reminder) => {
                 if (!reminder.reminder_sent && reminder.date) {
                     const reminderDateTime = reminder.time
                         ? new Date(`${reminder.date}T${reminder.time}`)
                         : new Date(`${reminder.date}T00:00:00`);
 
                     if (now >= reminderDateTime) {
-                        // Mark as sent
+                        console.log(`Triggering calendar reminder: ${reminder.title}`);
                         updateReminder(reminder.id, { reminder_sent: true });
 
-                        if (notificationsEnabled) {
+                        if (notificationsEnabledRef.current) {
                             showNotification(`Upcoming: ${reminder.title}`, {
                                 body: `Scheduled for ${reminder.date}${reminder.time ? ` at ${reminder.time}` : ""}`,
                                 tag: reminder.id,
+                                requireInteraction: true,
                             });
                         }
                     }
                 }
             });
-        }, 30000); // Check every 30 seconds for better responsiveness
+        }, 10000); // Check every 10 seconds for much better reliability
 
-        return () => clearInterval(interval);
-    }, [tasks, isLoaded, userEmail]);
+        return () => {
+            console.log("Clearing reminder polling...");
+            clearInterval(interval);
+        };
+    }, [isLoaded, userEmail]);
 
     return (
         <TasksContext.Provider

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Palette, CalendarIcon, Clock } from "lucide-react";
+import { X, Palette, CalendarIcon, Clock, Bell } from "lucide-react";
 import { useTasks, Reminder } from "@/contexts/TasksContext";
 
 interface CreateReminderModalProps {
@@ -102,48 +102,64 @@ export function CreateReminderModal({ isOpen, onClose, initialDate, reminderToEd
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        {/* Date */}
-                        <div>
-                            <label className="block text-sm font-medium mb-1.5">Date *</label>
-                            <div className="relative">
-                                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                                <input
-                                    type="date"
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none transition-all text-sm text-slate-700 shadow-sm"
-                                />
+                    {/* Schedule Section */}
+                    <div className="p-5 rounded-2xl bg-indigo-50/30 border border-indigo-100/50 space-y-4">
+                        <div className="flex items-center gap-2 mb-1">
+                            <CalendarIcon size={18} className="text-indigo-600" />
+                            <h3 className="text-sm font-semibold text-slate-800 tracking-tight">Schedule</h3>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wider">Date *</label>
+                                <div className="relative">
+                                    <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                    <input
+                                        type="date"
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-indigo-100/50 hover:border-indigo-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-sm text-slate-700 shadow-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wider">Time</label>
+                                <div className="relative">
+                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                    <input
+                                        type="time"
+                                        value={time}
+                                        onChange={(e) => setTime(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-indigo-100/50 hover:border-indigo-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-sm text-slate-700 shadow-sm"
+                                    />
+                                </div>
                             </div>
                         </div>
 
-                        {/* Time */}
-                        <div>
-                            <label className="block text-sm font-medium mb-1.5">Time (Optional)</label>
-                            <div className="relative">
-                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                                <input
-                                    type="time"
-                                    value={time}
-                                    onChange={(e) => setTime(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none transition-all text-sm text-slate-700 shadow-sm"
-                                />
-                            </div>
-                        </div>
+                        {date && (
+                            <p className="text-[11px] text-indigo-600 font-medium pl-1 flex items-center gap-1.5">
+                                <Bell size={12} />
+                                Alert scheduled for: {new Date(date + (time ? `T${time}` : 'T00:00:00')).toLocaleString()}
+                            </p>
+                        )}
                     </div>
 
                     {/* Color Picker */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2 flex items-center gap-2">
-                            <Palette size={16} className="text-muted-foreground" />
-                            Color Label
+                    <div className="p-5 rounded-2xl bg-slate-50/50 border border-slate-100 space-y-3">
+                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                            <Palette size={14} className="text-slate-400" />
+                            Color Accent
                         </label>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap gap-3">
                             {colors.map((c) => (
                                 <button
                                     key={c.name}
                                     onClick={() => setColor(c.class)}
-                                    className={`w-7 h-7 rounded-full ${c.class} transition-transform ${color === c.class ? 'scale-125 ring-2 ring-offset-2 ring-offset-background ring-indigo-500' : 'hover:scale-110 cursor-pointer'}`}
+                                    className={`w-8 h-8 rounded-full ${c.class} transition-all duration-300 ${color === c.class
+                                        ? 'scale-125 ring-2 ring-indigo-500 ring-offset-4 ring-offset-white shadow-lg'
+                                        : 'hover:scale-110 opacity-70 hover:opacity-100'
+                                        }`}
                                     title={c.name}
                                 />
                             ))}

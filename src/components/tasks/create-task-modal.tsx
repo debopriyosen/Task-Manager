@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Loader2, CalendarIcon, Bell, Trash2, FolderOpen, Activity } from "lucide-react";
+import { X, Loader2, CalendarIcon, Bell, Trash2, FolderOpen, Activity, Clock } from "lucide-react";
 import { useTasks, Subtask, Task, Project, Status } from "@/contexts/TasksContext";
 import { v4 as uuidv4 } from "uuid";
 
@@ -23,6 +23,8 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
     const [projectId, setProjectId] = useState<string>("none");
     const [subtasks, setSubtasks] = useState<{ id?: string; title: string; is_completed: boolean }[]>([]);
     const [status, setStatus] = useState<Status>("pending");
+    const [showCustomReminder, setShowCustomReminder] = useState(false);
+    const [customReminderTime, setCustomReminderTime] = useState("");
 
     useEffect(() => {
         if (isOpen) {
@@ -76,7 +78,9 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
         if (!title.trim()) return;
 
         let reminderTime: string | undefined = undefined;
-        if (dueDate && reminderOffset !== "none") {
+        if (showCustomReminder && customReminderTime) {
+            reminderTime = new Date(customReminderTime).toISOString();
+        } else if (dueDate && reminderOffset !== "none") {
             const due = new Date(dueDate);
             if (reminderOffset === "10m") due.setMinutes(due.getMinutes() - 10);
             else if (reminderOffset === "1h") due.setHours(due.getHours() - 1);
@@ -100,6 +104,7 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                 projectId: finalProjectId,
                 due_date: dueDate ? new Date(dueDate).toISOString() : undefined,
                 reminder_time: reminderTime || (reminderOffset === "none" ? undefined : taskToEdit.reminder_time),
+                reminder_sent: (reminderTime !== undefined && reminderTime !== taskToEdit.reminder_time) ? false : taskToEdit.reminder_sent,
                 subtasks: formattedSubtasks,
                 status,
             });
@@ -161,19 +166,112 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                         />
                     </div>
 
-                    {/* Options Grid */}
+                    {/* Schedule Section */}
+                    <div className="p-5 rounded-2xl bg-indigo-50/30 border border-indigo-100/50 space-y-4">
+                        <div className="flex items-center gap-2 mb-1">
+                            <CalendarIcon size={18} className="text-indigo-600" />
+                            <h3 className="text-sm font-semibold text-slate-800 tracking-tight">Schedule & Reminders</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wider">Due Date</label>
+                                <div className="relative">
+                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                    <input
+                                        type="datetime-local"
+                                        value={dueDate}
+                                        onChange={(e) => setDueDate(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-indigo-100/50 hover:border-indigo-300 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-sm text-slate-700 shadow-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wider">Reminder</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {[
+                                        { label: "None", value: "none" },
+                                        { label: "10m", value: "10m" },
+                                        { label: "1h", value: "1h" },
+                                        { label: "1d", value: "1d" }
+                                    ].map((opt) => (
+                                        <button
+                                            key={opt.value}
+                                            onClick={() => {
+                                                setReminderOffset(opt.value);
+                                                setShowCustomReminder(false);
+                                            }}
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${reminderOffset === opt.value && !showCustomReminder
+                                                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                                                : "bg-white text-slate-600 border border-indigo-100/50 hover:border-indigo-300"
+                                                }`}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    ))}
+                                    <button
+                                        onClick={() => setShowCustomReminder(!showCustomReminder)}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${showCustomReminder
+                                            ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                                            : "bg-white text-slate-600 border border-indigo-100/50 hover:border-indigo-300"
+                                            }`}
+                                    >
+                                        Custom
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {showCustomReminder && (
+                            <div className="animate-in slide-in-from-top-2 duration-200">
+                                <label className="block text-[10px] font-bold text-indigo-600 mb-1.5 uppercase tracking-widest pl-1">Custom Reminder Time</label>
+                                <div className="relative">
+                                    <Bell className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400" size={16} />
+                                    <input
+                                        type="datetime-local"
+                                        value={customReminderTime}
+                                        onChange={(e) => setCustomReminderTime(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-sm text-slate-700 shadow-sm"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {dueDate && (reminderOffset !== "none" || showCustomReminder) && (
+                            <p className="text-[11px] text-indigo-600 font-medium pl-1 flex items-center gap-1.5">
+                                <Bell size={12} />
+                                Alert will fire at: {(() => {
+                                    if (showCustomReminder && customReminderTime) return new Date(customReminderTime).toLocaleString();
+                                    const due = new Date(dueDate);
+                                    if (reminderOffset === "10m") due.setMinutes(due.getMinutes() - 10);
+                                    else if (reminderOffset === "1h") due.setHours(due.getHours() - 1);
+                                    else if (reminderOffset === "1d") due.setDate(due.getDate() - 1);
+                                    return due.toLocaleString();
+                                })()}
+                            </p>
+                        )}
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium mb-1.5">Priority</label>
-                            <select
-                                value={priority}
-                                onChange={(e) => setPriority(e.target.value as any)}
-                                className="w-full px-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none transition-all text-slate-700 shadow-sm cursor-pointer"
-                            >
-                                <option value="low">Low</option>
-                                <option value="medium">Medium</option>
-                                <option value="high">High</option>
-                            </select>
+                            <div className="flex gap-2">
+                                {["low", "medium", "high"].map((p) => (
+                                    <button
+                                        key={p}
+                                        onClick={() => setPriority(p as any)}
+                                        className={`flex-1 py-2.5 rounded-xl text-xs font-semibold capitalize transition-all border ${priority === p
+                                            ? p === "high" ? "bg-red-500 border-red-500 text-white shadow-lg shadow-red-500/20" :
+                                                p === "medium" ? "bg-amber-500 border-amber-500 text-white shadow-lg shadow-amber-500/20" :
+                                                    "bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                                            : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                                            }`}
+                                    >
+                                        {p}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                         {taskToEdit && (
                             <div>
@@ -205,34 +303,6 @@ export function CreateTaskModal({ isOpen, onClose, taskToEdit = null, initialPro
                                     {projects.map(p => (
                                         <option key={p.id} value={p.id}>{p.name}</option>
                                     ))}
-                                </select>
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1.5">Due Date</label>
-                            <div className="relative">
-                                <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                                <input
-                                    type="datetime-local"
-                                    value={dueDate}
-                                    onChange={(e) => setDueDate(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none transition-all text-sm text-slate-700 shadow-sm"
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1.5">Reminder</label>
-                            <div className="relative">
-                                <Bell className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                                <select
-                                    value={reminderOffset}
-                                    onChange={(e) => setReminderOffset(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50/50 border border-indigo-100/50 hover:border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white outline-none transition-all text-sm appearance-none text-slate-700 shadow-sm cursor-pointer"
-                                >
-                                    <option value="none">None</option>
-                                    <option value="10m">10 min before</option>
-                                    <option value="1h">1 hour before</option>
-                                    <option value="1d">1 day before</option>
                                 </select>
                             </div>
                         </div>

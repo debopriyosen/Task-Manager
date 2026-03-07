@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Clock, CheckCircle2, AlertCircle, Plus, FolderPlus, Activity } from "lucide-react";
+import { Clock, CheckCircle2, AlertCircle, Plus, FolderPlus, Activity, Bell } from "lucide-react";
 import { CreateTaskModal } from "@/components/tasks/create-task-modal";
 import { CreateProjectModal } from "@/components/projects/create-project-modal";
 import { useTasks, Task } from "@/contexts/TasksContext";
@@ -63,7 +63,15 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex items-center gap-3 mt-1.5">
                         {task.due_date && (
-                            <p className="text-xs text-muted-foreground">Due {format(new Date(task.due_date), "PP p")}</p>
+                            <div className="flex items-center gap-1.5">
+                                <p className="text-xs text-muted-foreground">Due {format(new Date(task.due_date), "PP p")}</p>
+                                {task.reminder_time && !task.reminder_sent && (
+                                    <div className="flex items-center gap-1 text-[10px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded">
+                                        <Bell size={10} />
+                                        Reminder Set
+                                    </div>
+                                )}
+                            </div>
                         )}
                         {task.projectId && projects.find(p => p.id === task.projectId) && (
                             <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md text-white shadow-sm ${projects.find(p => p.id === task.projectId)?.color || 'bg-primary-500'}`}>
