@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import confetti from "canvas-confetti";
+import { showNotification } from "@/lib/notification";
 
 export type Priority = "low" | "medium" | "high";
 export type Status = "pending" | "on_track" | "completed";
@@ -265,7 +266,13 @@ export function TasksProvider({ children }: { children: React.ReactNode }) {
                         updateTask(task.id, { reminder_sent: true });
 
                         try {
-                            // Send the email
+                            // 1. Show local browser notification (Free/Smart)
+                            showNotification(`Reminder: ${task.title}`, {
+                                body: task.description || (task.due_date ? `Due: ${new Date(task.due_date).toLocaleDateString()}` : "Task is due!"),
+                                tag: task.id,
+                            });
+
+                            // 2. Send the email (Existing)
                             await fetch("/api/reminders/send", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
