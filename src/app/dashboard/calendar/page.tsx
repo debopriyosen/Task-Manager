@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTasks, Task, Reminder } from "@/contexts/TasksContext";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Clock } from "lucide-react";
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO } from "date-fns";
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, isToday, parseISO, addDays, isBefore, startOfDay } from "date-fns";
 import { CreateReminderModal } from "@/components/calendar/create-reminder-modal";
 import { CreateTaskModal } from "@/components/tasks/create-task-modal";
 
@@ -116,8 +116,61 @@ export default function CalendarPage() {
         return { dayTasks, dayReminders };
     };
 
+    // Weekly Highlights Logic
+    const allDaysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
+    const todayDate = startOfDay(new Date());
+
+    const highlights = allDaysInMonth
+        .filter(day => {
+            if (isSameMonth(day, todayDate)) {
+                return !isBefore(day, todayDate) || isSameDay(day, todayDate);
+            }
+            return true;
+        })
+        .map(day => {
+            const { dayTasks, dayReminders } = getItemsForDay(day);
+            const highPriorityCount = dayTasks.filter(t => t.priority === 'high').length;
+
+            return {
+                date: day,
+                tasksCount: dayTasks.length,
+                remindersCount: dayReminders.length,
+                highPriorityCount,
+                total: dayTasks.length + dayReminders.length
+            };
+        })
+        .filter(h => h.total > 0)
+        .slice(0, 3);
+
     return (
-        <div className="flex flex-col h-full space-y-6 animate-in fade-in duration-500">
+        <div className="flex flex-col h-full space-y-6 animate-in fade-in duration-500 pb-10">
+            {/* Dynamic Highlights Bar */}
+            {highlights.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {highlights.map((h, i) => (
+                        <div key={i} className="glass-card rounded-2xl p-4 shadow-sm border border-slate-200/50 flex items-center justify-between group hover:shadow-md transition-all">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                                    {h.highPriorityCount > 0 ? "⚡" : "📅"}
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">{format(h.date, "EEEE")}</h3>
+                                    <p className="text-xs text-slate-500">{format(h.date, "MMM do")}</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-lg font-black text-indigo-600 dark:text-indigo-400">
+                                    {h.highPriorityCount > 0 ? `${h.highPriorityCount} Deadline${h.highPriorityCount > 1 ? 's' : ''}` :
+                                        h.tasksCount > 0 ? `${h.tasksCount} Task${h.tasksCount !== 1 ? 's' : ''}` :
+                                            `${h.remindersCount} Reminder${h.remindersCount !== 1 ? 's' : ''}`}
+                                </p>
+                                <p className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Scheduled</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
@@ -189,10 +242,9 @@ export default function CalendarPage() {
                                 onDrop={(e) => handleDrop(e, day)}
                                 onClick={() => handleDayClick(day)}
                                 className={`
-                                    min-h-[120px] p-2 border-b border-r border-slate-100 relative group cursor-pointer transition-colors
-                                    ${!isCurrentMonth ? 'bg-slate-50/50 text-slate-400' : 'bg-white text-slate-800'}
+                                    min-h-[120px] p-2 border-b border-r border-slate-100 relative group cursor-pointer transition-all duration-300 calendar-day-hover
+                                    ${!isCurrentMonth ? 'bg-slate-50/10 text-slate-400' : 'bg-white text-slate-800'}
                                     ${idx % 7 === 6 ? 'border-r-0' : ''}
-                                    hover:bg-slate-50
                                 `}
                             >
                                 <div className="flex justify-between items-start mb-2">
@@ -236,7 +288,7 @@ export default function CalendarPage() {
                                             title={task.title}
                                         >
                                             <div className={`w-2 h-2 rounded-full flex-shrink-0 ${task.priority === 'high' ? 'bg-red-500' :
-                                                    task.priority === 'medium' ? 'bg-amber-500' : 'bg-blue-500'
+                                                task.priority === 'medium' ? 'bg-amber-500' : 'bg-blue-500'
                                                 }`} />
                                             <span className="truncate flex-1">{task.title}</span>
                                         </div>

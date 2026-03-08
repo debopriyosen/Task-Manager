@@ -168,7 +168,7 @@ export default function SettingsPage() {
                 )}
 
                 <div className="space-y-4 mb-8">
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-background border border-border shadow-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-background border border-border shadow-sm gap-4">
                         <div className="space-y-0.5">
                             <p className="text-sm font-medium">Push Notifications</p>
                             <p className="text-xs text-muted-foreground">Receive real-time alerts for your tasks and reminders.</p>
@@ -176,7 +176,7 @@ export default function SettingsPage() {
                         <button
                             onClick={handleToggleNotifications}
                             disabled={notificationPermission === "denied"}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${notificationsEnabled && notificationPermission === "granted" ? "bg-primary-600" : "bg-slate-200 dark:bg-slate-700"
+                            className={`relative shrink-0 inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 ${notificationsEnabled && notificationPermission === "granted" ? "bg-primary-600" : "bg-slate-200 dark:bg-slate-700"
                                 } ${notificationPermission === "denied" ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
                         >
                             <span
@@ -186,7 +186,7 @@ export default function SettingsPage() {
                         </button>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                         <button
                             onClick={handleTestNotification}
                             disabled={notificationPermission !== "granted" || !notificationsEnabled || testState !== "idle"}

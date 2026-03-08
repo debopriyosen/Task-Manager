@@ -40,13 +40,22 @@ export default function ProjectsDashboardPage() {
                     </p>
                 )}
 
-                <div className="space-y-1.5 mt-auto">
-                    <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+                <div className="space-y-2 mt-auto">
+                    <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
                         <span>Progress</span>
-                        <span>{Math.round(progress)}%</span>
+                        <span className={progress === 100 ? "text-emerald-600 dark:text-emerald-400" : ""}>{Math.round(progress)}%</span>
                     </div>
-                    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-primary-500 rounded-full transition-all duration-500" style={{ width: `${progress}%` }} />
+                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden relative group/progress">
+                        <div
+                            className={`h-full rounded-full transition-all duration-1000 ease-out relative ${progress === 100 ? 'bg-gradient-to-r from-emerald-500 to-teal-600 shadow-[0_0_12px_rgba(16,185,129,0.4)]' :
+                                progress > 50 ? 'bg-gradient-to-r from-blue-500 to-indigo-600 shadow-[0_0_12px_rgba(59,130,246,0.4)]' :
+                                    'bg-gradient-to-r from-orange-500 to-red-500 shadow-[0_0_12px_rgba(249,115,22,0.4)]'
+                                }`}
+                            style={{ width: `${progress}%` }}
+                        >
+                            {/* Shine effect */}
+                            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-progress-shine" />
+                        </div>
                     </div>
                 </div>
             </Link>
