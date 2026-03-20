@@ -7,6 +7,9 @@ import { CreateProjectModal } from "@/components/projects/create-project-modal";
 import { ExpenseDashboard } from "@/components/expenses/expense-dashboard";
 import { useTasks, Task } from "@/contexts/TasksContext";
 import { format } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
+import confetti from "canvas-confetti";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function DashboardPage() {
     const { tasks, reminders, toggleTaskStatus, projects, userName } = useTasks();
@@ -33,7 +36,12 @@ export default function DashboardPage() {
         const progress = task.subtasks.length > 0 ? (completedSubtasks / task.subtasks.length) * 100 : 0;
 
         return (
-            <div
+            <motion.div
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9, height: 0, overflow: 'hidden' }}
+                transition={{ duration: 0.2 }}
                 key={task.id}
                 className="group flex items-start gap-3 p-4 -mx-4 sm:p-4 sm:mx-0 rounded-2xl border border-transparent hover:border-border/50 hover:bg-card/50 hover:shadow-sm hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
                 onClick={() => setTaskToEdit(task)}
@@ -41,6 +49,14 @@ export default function DashboardPage() {
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
+                        if (!isCompleted) {
+                            confetti({
+                                particleCount: 150,
+                                spread: 70,
+                                origin: { y: 0.6 },
+                                colors: ['#4f46e5', '#10b981', '#f59e0b']
+                            });
+                        }
                         toggleTaskStatus(task.id);
                     }}
                     className={`mt-1 flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isCompleted ? 'bg-success border-success text-white' :
@@ -102,7 +118,7 @@ export default function DashboardPage() {
                         </div>
                     )}
                 </div>
-            </div>
+            </motion.div>
         );
     };
 
@@ -114,7 +130,10 @@ export default function DashboardPage() {
     const upcomingReminders = reminders.filter(r => r.date > todayString).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 4);
 
     return (
-        <div className="flex flex-col w-full">
+        <div className="relative flex flex-col w-full">
+            <div className="absolute top-0 right-0 z-50">
+                <ThemeToggle />
+            </div>
             <div className="flex justify-center mb-10">
                 <div className="bg-slate-100/80 dark:bg-slate-900/50 p-2 rounded-[1.25rem] flex items-center gap-2 border border-slate-200/60 dark:border-slate-800/60 shadow-inner max-w-md w-full sm:w-auto mt-2">
                     <button 
@@ -132,12 +151,29 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {activeTab === "expenses" ? (
-                <ExpenseDashboard />
-            ) : (
-                <>
-                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <AnimatePresence mode="wait">
+                {activeTab === "expenses" ? (
+                    <motion.div
+                        key="expenses"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.25 }}
+                        className="w-full"
+                    >
+                        <ExpenseDashboard />
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="tasks"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.25 }}
+                        className="w-full"
+                    >
+                        <div className="space-y-8">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="w-full sm:w-auto">
                         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 flex flex-wrap items-center gap-x-2 gap-y-1">
                             <span>Good Morning,</span> <span className="text-blue-600 dark:text-blue-400 font-extrabold break-all">{userName}</span>
@@ -183,14 +219,29 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
                         {/* Main Tasks List */}
-                        <div className="bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+                        <div className="bg-card border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm overflow-hidden">
                             <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">High Priority Tasks</h2>
                             <div className="space-y-3">
-                                {pendingPriorityTasks.length > 0 ? (
-                                    pendingPriorityTasks.map(renderTask)
-                                ) : (
-                                    <p className="text-sm text-muted-foreground text-center py-8">No high priority tasks right now. Great job!</p>
-                                )}
+                                <AnimatePresence mode="popLayout">
+                                    {pendingPriorityTasks.length > 0 ? (
+                                        pendingPriorityTasks.map(renderTask)
+                                    ) : (
+                                        <motion.div
+                                            key="empty"
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ duration: 0.3 }}
+                                            className="flex flex-col items-center justify-center text-center py-10 my-4 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-2xl border border-dashed border-indigo-200/60 dark:border-indigo-800/60"
+                                        >
+                                            <div className="w-16 h-16 bg-white dark:bg-card rounded-full flex items-center justify-center text-indigo-500 mb-4 shadow-sm border border-slate-100 dark:border-slate-800">
+                                                <CheckCircle2 size={28} />
+                                            </div>
+                                            <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">All caught up!</h3>
+                                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">You have no high priority tasks left for now.</p>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </div>
                     </div>
@@ -256,12 +307,14 @@ export default function DashboardPage() {
                                 )) : (
                                     <p className="text-sm text-muted-foreground text-center py-4">No upcoming reminders.</p>
                                 )}
+                                </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
-            </div>
+                </motion.div>
+                )}
+            </AnimatePresence>
 
             <CreateTaskModal
                 isOpen={isModalOpen || !!taskToEdit}
@@ -276,8 +329,6 @@ export default function DashboardPage() {
                 isOpen={isProjectModalOpen}
                 onClose={() => setIsProjectModalOpen(false)}
             />
-                </>
-            )}
         </div>
     );
 }

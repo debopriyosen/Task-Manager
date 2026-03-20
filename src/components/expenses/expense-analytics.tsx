@@ -112,14 +112,16 @@ export function ExpenseAnalytics() {
                     </div>
                 </div>
 
-                <div className="bg-indigo-600 dark:bg-indigo-900/40 text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between border border-indigo-500 dark:border-indigo-800">
-                    <div>
+                <div className="relative bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-600 dark:from-indigo-900 dark:via-indigo-800 dark:to-purple-900 text-white rounded-2xl p-6 shadow-xl shadow-indigo-500/20 flex flex-col justify-between border border-white/10 dark:border-indigo-500/20 overflow-hidden group">
+                    <div className="absolute top-0 right-0 -mt-8 -mr-8 w-40 h-40 bg-white/10 rounded-full blur-2xl transition-transform duration-700 group-hover:scale-150"></div>
+                    <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-purple-500/20 rounded-full blur-xl transition-transform duration-700 group-hover:scale-150"></div>
+                    <div className="relative z-10">
                         <p className="text-sm font-medium text-indigo-100">Total Tracked</p>
                         <h3 className="text-3xl font-bold mt-1">
                             ₹{expenses.reduce((acc, c) => acc + c.amount, 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </h3>
                     </div>
-                    <p className="text-xs text-indigo-200 mt-4 opacity-80">
+                    <p className="relative z-10 text-xs text-indigo-200 mt-4 opacity-80">
                         Across {expenses.length} transactions
                     </p>
                 </div>
@@ -132,6 +134,14 @@ export function ExpenseAnalytics() {
                     <div className="h-[250px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
+                                <defs>
+                                    {categoryData.map((c, i) => (
+                                        <linearGradient key={`grad-${i}`} id={`grad-${i}`} x1="0" y1="0" x2="1" y2="1">
+                                            <stop offset="0%" stopColor={getBorderColorClass(c.name)} />
+                                            <stop offset="100%" stopColor={getBorderColorClass(c.name)} stopOpacity={0.7} />
+                                        </linearGradient>
+                                    ))}
+                                </defs>
                                 <Pie
                                     data={categoryData}
                                     cx="50%"
@@ -143,7 +153,7 @@ export function ExpenseAnalytics() {
                                     stroke="none"
                                 >
                                     {categoryData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={getBorderColorClass(entry.name)} />
+                                        <Cell key={`cell-${index}`} fill={`url(#grad-${index})`} style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.15))" }} />
                                     ))}
                                 </Pie>
                                 <Tooltip
@@ -170,15 +180,21 @@ export function ExpenseAnalytics() {
                     <div className="h-[250px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={monthlyTrends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <defs>
+                                    <linearGradient id="colorBar" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#4f46e5" stopOpacity={0.9} />
+                                        <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.6} />
+                                    </linearGradient>
+                                </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(val) => `₹${val.toLocaleString('en-IN')}`} />
                                 <Tooltip
-                                    cursor={{ fill: 'rgba(0,0,0,0.05)' }}
+                                    cursor={{ fill: 'rgba(0,0,0,0.03)' }}
                                     formatter={(value: any) => [`₹${Number(value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, 'Spent']}
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 />
-                                <Bar dataKey="total" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                                <Bar dataKey="total" fill="url(#colorBar)" radius={[4, 4, 0, 0]} maxBarSize={40} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
