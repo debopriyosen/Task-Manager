@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { useTasks } from "@/contexts/TasksContext";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface TopbarProps {
     onOpenSidebar: () => void;
@@ -139,9 +140,10 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
                 </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
+                <ThemeToggle />
                 <Link href="/dashboard/settings">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-medium text-sm cursor-pointer border border-blue-200 hover:ring-2 hover:ring-offset-2 hover:ring-blue-500 transition-all">
+                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-700 dark:text-blue-300 font-medium text-sm cursor-pointer border border-blue-200 dark:border-blue-800 hover:ring-2 hover:ring-offset-2 hover:ring-blue-500 transition-all shadow-sm">
                         {userName ? userName.charAt(0).toUpperCase() : "U"}
                     </div>
                 </Link>

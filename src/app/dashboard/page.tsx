@@ -9,7 +9,6 @@ import { useTasks, Task } from "@/contexts/TasksContext";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function DashboardPage() {
     const { tasks, reminders, toggleTaskStatus, projects, userName } = useTasks();
@@ -129,11 +128,16 @@ export default function DashboardPage() {
     const todayReminders = reminders.filter(r => r.date === todayString);
     const upcomingReminders = reminders.filter(r => r.date > todayString).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 4);
 
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return "Good Morning,";
+        if (hour < 17) return "Good Afternoon,";
+        if (hour < 21) return "Good Evening,";
+        return "Good Night,";
+    };
+
     return (
         <div className="relative flex flex-col w-full">
-            <div className="absolute top-0 right-0 z-50">
-                <ThemeToggle />
-            </div>
             <div className="flex justify-center mb-10">
                 <div className="bg-slate-100/80 dark:bg-slate-900/50 p-2 rounded-[1.25rem] flex items-center gap-2 border border-slate-200/60 dark:border-slate-800/60 shadow-inner max-w-md w-full sm:w-auto mt-2">
                     <button 
@@ -175,8 +179,8 @@ export default function DashboardPage() {
                         <div className="space-y-8">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="w-full sm:w-auto">
-                        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 flex flex-wrap items-center gap-x-2 gap-y-1">
-                            <span>Good Morning,</span> <span className="text-blue-600 dark:text-blue-400 font-extrabold break-all">{userName}</span>
+                        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 flex flex-wrap items-center gap-x-2 gap-y-1">
+                            <span>{getGreeting()}</span> <span className="text-blue-600 dark:text-blue-400 font-extrabold break-all">{userName}</span>
                         </h1>
                         <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">Here's your productivity overview for today.</p>
                     </div>
