@@ -22,44 +22,102 @@ export function ExportReportButton({ expenses, filterMonth }: ExportReportButton
             const { default: autoTable } = await import("jspdf-autotable");
 
             const doc = new jsPDF();
+            const pageWidth = doc.internal.pageSize.getWidth();
             
-            // Title
+            // 1. Dark Header Background (Slate 900)
+            doc.setFillColor(15, 23, 42); 
+            // Draw a rounded rect that aggressively bleeds off the top, left, and right to prevent white borders
+            doc.roundedRect(-10, -20, pageWidth + 20, 75, 30, 30, "F");
+
+            // 2. Logo Circle & Text (Perfectly Centered Group)
+            const titleText = "Planora";
             doc.setFontSize(22);
-            doc.setTextColor(30, 58, 138); // Indigo 900
-            doc.text("Planora Financial Report", 14, 22);
-
-            // Subtitle / Date range
-            doc.setFontSize(11);
-            doc.setTextColor(100, 116, 139); // Slate 500
-            const reportPeriod = filterMonth === "All" ? "All Time" : format(parseISO(`${filterMonth}-01`), "MMMM yyyy");
-            doc.text(`Report Period: ${reportPeriod}`, 14, 30);
-            doc.text(`Generated on: ${format(new Date(), "PPpp")}`, 14, 36);
-
-            // Summary Stats
-            const totalSpent = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+            doc.setFont("helvetica", "bold");
+            const textWidth = doc.getTextWidth(titleText);
             
-            doc.setFontSize(14);
-            doc.setTextColor(15, 23, 42); // Slate 900
-            doc.text(`Total Expenses: ₹${totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, 14, 48);
-            doc.text(`Total Transactions: ${expenses.length}`, 14, 55);
+            // Icon width is 10 (radius 5), plus a gap of 4 before text = 14
+            const totalGroupWidth = 14 + textWidth;
+            const startX = (pageWidth - totalGroupWidth) / 2;
+            const iconCenterX = startX + 5;
 
-            // Add Table
+            // Draw Indigo Circle
+            doc.setFillColor(79, 70, 229); // Indigo 600
+            doc.circle(iconCenterX, 17, 5, "F");
+
+            // Checkmark inside the circle
+            doc.setDrawColor(255, 255, 255);
+            doc.setLineWidth(0.8);
+            doc.line(iconCenterX - 1.5, 17, iconCenterX - 0.5, 18.5); // short tick
+            doc.line(iconCenterX - 0.5, 18.5, iconCenterX + 2, 15); // long tick
+
+            // "Planora" text
+            doc.setTextColor(255, 255, 255);
+            doc.text(titleText, startX + 14, 19.5);
+
+            // "Expense Report"
+            doc.setFontSize(16);
+            doc.text("Expense Report", pageWidth / 2, 34, { align: "center" });
+
+            // 3. Total Expenses Container Pill
+            doc.setFillColor(79, 70, 229); // Indigo 600
+            doc.roundedRect(pageWidth / 2 - 50, 48, 100, 15, 7.5, 7.5, "F");
+
+            // "Total Expenses: [Amount]"
+            const totalSpent = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+            doc.setFontSize(14);
+            doc.setTextColor(255, 255, 255);
+            // Using "Rs." because jsPDF standard fonts do not support the Rupee symbol, which causes text breaking.
+            doc.text(
+                `Total Expenses: Rs. ${totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
+                pageWidth / 2,
+                48 + 15 / 2, // Geometric center Y (start 48 + half height 7.5)
+                { align: "center", baseline: "middle" }
+            );
+
+            // 4. Report Details (Left Aligned)
+            doc.setFontSize(9);
+            doc.setTextColor(50, 50, 50);
+            doc.setFont("helvetica", "normal");
+            const reportPeriod = filterMonth === "All" ? "All Time" : format(parseISO(`${filterMonth}-01`), "MMMM yyyy");
+            doc.text(`Report Period : ${reportPeriod}`, 15, 75);
+            doc.text(`Generated on : ${format(new Date(), "PPpp")}`, 15, 81);
+
+            // 5. Add Table
             const tableData = expenses.map(e => [
                 format(parseISO(e.date), "MMM d, yyyy"),
                 e.category,
                 e.notes || "-",
-                `₹${e.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+                `Rs. ${e.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
             ]);
 
             autoTable(doc, {
-                startY: 65,
+                startY: 85,
                 head: [['Date', 'Category', 'Notes', 'Amount']],
                 body: tableData,
                 theme: 'striped',
-                headStyles: { fillColor: [79, 70, 229] }, // Indigo 600
-                columnStyles: {
-                    3: { halign: 'right' }
+                headStyles: { 
+                    fillColor: [79, 70, 229],
+                    textColor: 255,
+                    fontStyle: 'bold'
                 },
+                didDrawPage: (data: any) => {
+                    const str = `Page ${data.pageNumber}`;
+                    const footerStr = "Generated by Planora";
+                    doc.setFontSize(9);
+                    doc.setTextColor(150, 150, 150);
+                    doc.setFont("helvetica", "italic");
+                    
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    const margin = 15;
+                    
+                    // Subtle footer line
+                    doc.setDrawColor(226, 232, 240); // slate-200
+                    doc.setLineWidth(0.5);
+                    doc.line(margin, pageHeight - 15, pageWidth - margin, pageHeight - 15);
+                    
+                    doc.text(footerStr, margin, pageHeight - 9);
+                    doc.text(str, pageWidth - margin, pageHeight - 9, { align: "right" });
+                }
             });
 
             // Save PDF
