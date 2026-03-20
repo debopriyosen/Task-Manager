@@ -4,11 +4,13 @@ import { useState } from "react";
 import { Clock, CheckCircle2, AlertCircle, Plus, FolderPlus, Activity, Bell } from "lucide-react";
 import { CreateTaskModal } from "@/components/tasks/create-task-modal";
 import { CreateProjectModal } from "@/components/projects/create-project-modal";
+import { ExpenseDashboard } from "@/components/expenses/expense-dashboard";
 import { useTasks, Task } from "@/contexts/TasksContext";
 import { format } from "date-fns";
 
 export default function DashboardPage() {
     const { tasks, reminders, toggleTaskStatus, projects, userName } = useTasks();
+    const [activeTab, setActiveTab] = useState<"tasks" | "expenses">("tasks");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
     const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
@@ -112,9 +114,30 @@ export default function DashboardPage() {
     const upcomingReminders = reminders.filter(r => r.date > todayString).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).slice(0, 4);
 
     return (
-        <>
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col w-full">
+            <div className="flex justify-center mb-10">
+                <div className="bg-slate-100/80 dark:bg-slate-900/50 p-2 rounded-[1.25rem] flex items-center gap-2 border border-slate-200/60 dark:border-slate-800/60 shadow-inner max-w-md w-full sm:w-auto mt-2">
+                    <button 
+                        onClick={() => setActiveTab("tasks")}
+                        className={`flex-1 sm:flex-none sm:w-44 py-3.5 rounded-xl text-sm sm:text-base font-bold transition-all duration-300 ${activeTab === 'tasks' ? 'bg-white dark:bg-slate-800 shadow-md text-indigo-600 dark:text-indigo-400 transform scale-[1.02] ring-1 ring-slate-900/5 dark:ring-white/10' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'}`}
+                    >
+                        Task Manager
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab("expenses")}
+                        className={`flex-1 sm:flex-none sm:w-44 py-3.5 rounded-xl text-sm sm:text-base font-bold transition-all duration-300 ${activeTab === 'expenses' ? 'bg-white dark:bg-slate-800 shadow-md text-emerald-600 dark:text-emerald-400 transform scale-[1.02] ring-1 ring-slate-900/5 dark:ring-white/10' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'}`}
+                    >
+                        Expense Tracker
+                    </button>
+                </div>
+            </div>
+
+            {activeTab === "expenses" ? (
+                <ExpenseDashboard />
+            ) : (
+                <>
+                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="w-full sm:w-auto">
                         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 flex flex-wrap items-center gap-x-2 gap-y-1">
                             <span>Good Morning,</span> <span className="text-blue-600 dark:text-blue-400 font-extrabold break-all">{userName}</span>
@@ -253,6 +276,8 @@ export default function DashboardPage() {
                 isOpen={isProjectModalOpen}
                 onClose={() => setIsProjectModalOpen(false)}
             />
-        </>
+                </>
+            )}
+        </div>
     );
 }

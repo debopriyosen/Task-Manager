@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TasksProvider } from "@/contexts/TasksContext";
+import { ExpensesProvider } from "@/contexts/ExpensesContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -41,7 +42,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TasksProvider>
-            {children}
+            <ExpensesProvider>
+              {children}
+            </ExpensesProvider>
           </TasksProvider>
         </ThemeProvider>
       </body>
