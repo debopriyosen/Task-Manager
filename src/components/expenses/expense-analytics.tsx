@@ -53,9 +53,22 @@ export function ExpenseAnalytics() {
         if (timeRange === "year") {
             const trends = [];
             for (let i = 11; i >= 0; i--) {
-                const m = format(subMonths(now, i), "yyyy-MM");
+                const date = subMonths(now, i);
+                const m = format(date, "yyyy-MM");
                 const amt = expenses.filter(e => e.date.startsWith(m)).reduce((acc, curr) => acc + curr.amount, 0);
-                trends.push({ name: format(subMonths(now, i), "MMM"), total: amt });
+                trends.push({ name: format(date, "MMM"), total: amt });
+            }
+            return trends;
+        }
+
+        if (timeRange === "month") {
+            const trends = [];
+            // Show last 30 days
+            for (let i = 29; i >= 0; i--) {
+                const date = subDays(now, i);
+                const d = format(date, "yyyy-MM-dd");
+                const amt = expenses.filter(e => e.date === d).reduce((acc, curr) => acc + curr.amount, 0);
+                trends.push({ name: format(date, "MMM dd"), total: amt });
             }
             return trends;
         }
@@ -63,21 +76,15 @@ export function ExpenseAnalytics() {
         if (timeRange === "week") {
             const trends = [];
             for (let i = 6; i >= 0; i--) {
-                const d = format(subDays(now, i), "yyyy-MM-dd");
+                const date = subDays(now, i);
+                const d = format(date, "yyyy-MM-dd");
                 const amt = expenses.filter(e => e.date === d).reduce((acc, curr) => acc + curr.amount, 0);
-                trends.push({ name: format(subDays(now, i), "EEE"), total: amt });
+                trends.push({ name: format(date, "EEE"), total: amt });
             }
             return trends;
         }
 
-        // Default: last 6 months for "month" range
-        const trends = [];
-        for (let i = 5; i >= 0; i--) {
-            const m = format(subMonths(now, i), "yyyy-MM");
-            const amt = expenses.filter(e => e.date.startsWith(m)).reduce((acc, curr) => acc + curr.amount, 0);
-            trends.push({ name: format(subMonths(now, i), "MMM"), total: amt });
-        }
-        return trends;
+        return [];
     }, [expenses, timeRange]);
 
     // Used for Pie Chart colors
@@ -306,7 +313,14 @@ export function ExpenseAnalytics() {
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
+                                <XAxis 
+                                    dataKey="name" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fontSize: 10, fill: '#64748b' }} 
+                                    dy={10}
+                                    interval={timeRange === "month" ? 4 : 0}
+                                />
                                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(val) => `₹${val.toLocaleString('en-IN')}`} />
                                 <Tooltip
                                     cursor={{ fill: 'rgba(0,0,0,0.03)' }}
