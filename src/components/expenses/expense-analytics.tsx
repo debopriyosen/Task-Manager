@@ -9,9 +9,7 @@ import { TrendingUp, TrendingDown, IndianRupee, AlertCircle } from "lucide-react
 import { motion, AnimatePresence } from "framer-motion";
 
 export function ExpenseAnalytics() {
-    const { expenses, monthlyBudget, setMonthlyBudget } = useExpenses();
-    const [isEditingBudget, setIsEditingBudget] = useState(false);
-    const [tempBudget, setTempBudget] = useState(monthlyBudget.toString());
+    const { expenses } = useExpenses();
     const [timeRange, setTimeRange] = useState<"week" | "month" | "year">("month");
 
     // Setup Range-Aware Analytics Data
@@ -77,18 +75,6 @@ export function ExpenseAnalytics() {
     }, [expenses, timeRange, now]);
 
     const { currentTotal, trend, label, subLabel } = rangeData;
-
-    // Budget stuff (always monthly)
-    const currentMonthStr = format(now, "yyyy-MM");
-    const totalCurrentMonth = expenses.filter(e => e.date.startsWith(currentMonthStr)).reduce((acc, curr) => acc + curr.amount, 0);
-    const budgetProgress = monthlyBudget > 0 ? (totalCurrentMonth / monthlyBudget) * 100 : 0;
-    const isOverBudget = totalCurrentMonth > monthlyBudget && monthlyBudget > 0;
-
-    const handleBudgetSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setMonthlyBudget(Number(tempBudget));
-        setIsEditingBudget(false);
-    };
 
     const categoryDataMap = useMemo(() => {
         return expenses.reduce((acc, curr) => {
@@ -190,7 +176,7 @@ export function ExpenseAnalytics() {
 
             {/* Highlights Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-center">
                     <div className="flex justify-between items-start">
                         <div>
                             <p className="text-sm font-medium text-muted-foreground">{label}</p>
@@ -208,31 +194,6 @@ export function ExpenseAnalytics() {
                             )}
                             <span className="text-[10px] text-muted-foreground">{subLabel}</span>
                         </div>
-                    </div>
-                    
-                    {/* Budget Progress Bar */}
-                    <div className="mt-6 space-y-2">
-                        <div className="flex justify-between items-center text-xs">
-                            <span className="text-muted-foreground font-medium">Monthly Budget</span>
-                            <button 
-                                onClick={() => setIsEditingBudget(true)}
-                                className="text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
-                            >
-                                {monthlyBudget > 0 ? `₹${monthlyBudget.toLocaleString()}` : "Set Budget"}
-                            </button>
-                        </div>
-                        <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                            <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${Math.min(budgetProgress, 100)}%` }}
-                                className={`h-full rounded-full ${isOverBudget ? 'bg-red-500' : 'bg-indigo-500'}`}
-                            />
-                        </div>
-                        {isOverBudget && (
-                            <p className="text-[10px] text-red-500 font-bold flex items-center gap-1">
-                                <AlertCircle size={10} /> Over budget by ₹{(totalCurrentMonth - monthlyBudget).toLocaleString()}
-                            </p>
-                        )}
                     </div>
                 </div>
 
@@ -265,49 +226,7 @@ export function ExpenseAnalytics() {
                 </div>
             </div>
 
-            {/* Budget Edit Modal */}
-            <AnimatePresence>
-                {isEditingBudget && (
-                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-                        <motion.div 
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-xl"
-                        >
-                            <h3 className="text-lg font-bold mb-4">Set Monthly Budget</h3>
-                            <form onSubmit={handleBudgetSubmit} className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-muted-foreground">Monthly Limit (₹)</label>
-                                    <input 
-                                        type="number"
-                                        value={tempBudget}
-                                        onChange={(e) => setTempBudget(e.target.value)}
-                                        className="w-full bg-muted border border-border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-bold text-lg"
-                                        placeholder="e.g. 50000"
-                                        autoFocus
-                                    />
-                                </div>
-                                <div className="flex gap-2">
-                                    <button 
-                                        type="button"
-                                        onClick={() => setIsEditingBudget(false)}
-                                        className="flex-1 px-4 py-2.5 rounded-xl border border-border font-medium hover:bg-muted transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button 
-                                        type="submit"
-                                        className="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors"
-                                    >
-                                        Save Budget
-                                    </button>
-                                </div>
-                            </form>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
+
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Category Pie Chart */}
