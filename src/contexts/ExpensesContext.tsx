@@ -23,13 +23,29 @@ export interface Expense {
     created_at: string;
 }
 
+export interface SavingsGoal {
+    id: string;
+    name: string;
+    emoji: string;
+    targetAmount: number;
+    savedAmount: number;
+    deadline: string; // ISO date string (YYYY-MM-DD)
+    color: string; // tailwind color name like "emerald", "violet", etc.
+    created_at: string;
+}
+
 interface ExpensesContextType {
     expenses: Expense[];
     monthlyBudget: number;
+    savingsGoals: SavingsGoal[];
     addExpense: (expense: Omit<Expense, "id" | "created_at">) => void;
     updateExpense: (id: string, updates: Partial<Expense>) => void;
     deleteExpense: (id: string) => void;
     setMonthlyBudget: (budget: number) => void;
+    addSavingsGoal: (goal: Omit<SavingsGoal, "id" | "created_at">) => void;
+    updateSavingsGoal: (id: string, updates: Partial<SavingsGoal>) => void;
+    deleteSavingsGoal: (id: string) => void;
+    addToSavings: (goalId: string, amount: number) => void;
 }
 
 const ExpensesContext = createContext<ExpensesContextType | undefined>(undefined);
@@ -37,6 +53,7 @@ const ExpensesContext = createContext<ExpensesContextType | undefined>(undefined
 export function ExpensesProvider({ children }: { children: React.ReactNode }) {
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [monthlyBudget, setMonthlyBudget] = useState<number>(0);
+    const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Load from LocalStorage
@@ -53,6 +70,14 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
         if (savedBudget) {
             setMonthlyBudget(Number(savedBudget));
         }
+        const savedGoals = localStorage.getItem("planora_savings_goals");
+        if (savedGoals) {
+            try {
+                setSavingsGoals(JSON.parse(savedGoals));
+            } catch (e) {
+                console.error("Failed to parse savings goals");
+            }
+        }
         setIsLoaded(true);
     }, []);
 
@@ -61,8 +86,9 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
         if (isLoaded) {
             localStorage.setItem("planora_expenses", JSON.stringify(expenses));
             localStorage.setItem("planora_budget", String(monthlyBudget));
+            localStorage.setItem("planora_savings_goals", JSON.stringify(savingsGoals));
         }
-    }, [expenses, monthlyBudget, isLoaded]);
+    }, [expenses, monthlyBudget, savingsGoals, isLoaded]);
 
     const triggerConfetti = () => {
         if (typeof window !== "undefined") {
@@ -70,7 +96,7 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
                 particleCount: 100,
                 spread: 70,
                 origin: { y: 0.6 },
-                colors: ["#10b981", "#34d399", "#059669"], // Money colors (greens)
+                colors: ["#10b981", "#34d399", "#059669"],
             });
         }
     };
@@ -95,15 +121,55 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
         setExpenses((prev) => prev.filter((e) => e.id !== id));
     };
 
+    const addSavingsGoal = (goalData: Omit<SavingsGoal, "id" | "created_at">) => {
+        const newGoal: SavingsGoal = {
+            ...goalData,
+            id: uuidv4(),
+            created_at: new Date().toISOString(),
+        };
+        setSavingsGoals((prev) => [...prev, newGoal]);
+        triggerConfetti();
+    };
+
+    const updateSavingsGoal = (id: string, updates: Partial<SavingsGoal>) => {
+        setSavingsGoals((prev) =>
+            prev.map((g) => (g.id === id ? { ...g, ...updates } : g))
+        );
+    };
+
+    const deleteSavingsGoal = (id: string) => {
+        setSavingsGoals((prev) => prev.filter((g) => g.id !== id));
+    };
+
+    const addToSavings = (goalId: string, amount: number) => {
+        setSavingsGoals((prev) =>
+            prev.map((g) => {
+                if (g.id === goalId) {
+                    const newSaved = g.savedAmount + amount;
+                    if (newSaved >= g.targetAmount) {
+                        triggerConfetti();
+                    }
+                    return { ...g, savedAmount: Math.min(newSaved, g.targetAmount) };
+                }
+                return g;
+            })
+        );
+    };
+
     return (
         <ExpensesContext.Provider
             value={{
                 expenses,
                 monthlyBudget,
+                savingsGoals,
                 addExpense,
                 updateExpense,
                 deleteExpense,
                 setMonthlyBudget,
+                addSavingsGoal,
+                updateSavingsGoal,
+                deleteSavingsGoal,
+                addToSavings,
             }}
         >
             {children}
