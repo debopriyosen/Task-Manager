@@ -12,6 +12,7 @@ export function ExpenseAnalytics() {
     const { expenses, monthlyBudget, setMonthlyBudget } = useExpenses();
     const [isEditingBudget, setIsEditingBudget] = useState(false);
     const [tempBudget, setTempBudget] = useState(monthlyBudget.toString());
+    const [timeRange, setTimeRange] = useState<"week" | "month" | "year">("month");
 
     // Setup Analytics Data
     const now = new Date();
@@ -47,16 +48,37 @@ export function ExpenseAnalytics() {
 
     const topCategory = categoryData.length > 0 ? categoryData[0] : null;
 
-    // Monthly trends mapping past 6 months
-    const monthlyTrends = useMemo(() => {
+    // Dynamic Trend Data based on timeRange
+    const trendData = useMemo(() => {
+        if (timeRange === "year") {
+            const trends = [];
+            for (let i = 11; i >= 0; i--) {
+                const m = format(subMonths(now, i), "yyyy-MM");
+                const amt = expenses.filter(e => e.date.startsWith(m)).reduce((acc, curr) => acc + curr.amount, 0);
+                trends.push({ name: format(subMonths(now, i), "MMM"), total: amt });
+            }
+            return trends;
+        }
+
+        if (timeRange === "week") {
+            const trends = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = format(subDays(now, i), "yyyy-MM-dd");
+                const amt = expenses.filter(e => e.date === d).reduce((acc, curr) => acc + curr.amount, 0);
+                trends.push({ name: format(subDays(now, i), "EEE"), total: amt });
+            }
+            return trends;
+        }
+
+        // Default: last 6 months for "month" range
         const trends = [];
         for (let i = 5; i >= 0; i--) {
-            const m = format(subMonths(new Date(), i), "yyyy-MM");
+            const m = format(subMonths(now, i), "yyyy-MM");
             const amt = expenses.filter(e => e.date.startsWith(m)).reduce((acc, curr) => acc + curr.amount, 0);
-            trends.push({ name: format(subMonths(new Date(), i), "MMM"), total: amt });
+            trends.push({ name: format(subMonths(now, i), "MMM"), total: amt });
         }
         return trends;
-    }, [expenses]);
+    }, [expenses, timeRange]);
 
     // Used for Pie Chart colors
     const getBorderColorClass = (category: string) => {
@@ -87,6 +109,22 @@ export function ExpenseAnalytics() {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
+            {/* Range Selector */}
+            <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-fit">
+                {(["week", "month", "year"] as const).map((range) => (
+                    <button
+                        key={range}
+                        onClick={() => setTimeRange(range)}
+                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${timeRange === range
+                                ? "bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm"
+                                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                            }`}
+                    >
+                        {range.charAt(0).toUpperCase() + range.slice(1)}ly
+                    </button>
+                ))}
+            </div>
+
             {/* Highlights Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
@@ -255,16 +293,16 @@ export function ExpenseAnalytics() {
                     </div>
                 </div>
 
-                {/* Monthly Trend Bar Chart */}
+                {/* Dynamic Trend Bar Chart */}
                 <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-                    <h3 className="text-lg font-semibold text-foreground mb-6">Monthly Trend</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-6">Spending Trend</h3>
                     <div className="h-[250px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={monthlyTrends} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <BarChart data={trendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorBar" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor="#4f46e5" stopOpacity={0.9} />
-                                        <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.6} />
+                                        <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
+                                        <stop offset="100%" stopColor="#059669" stopOpacity={0.6} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -281,6 +319,7 @@ export function ExpenseAnalytics() {
                     </div>
                 </div>
             </div>
+
         </div>
     );
 }

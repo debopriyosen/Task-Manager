@@ -2,13 +2,35 @@
 
 import { useState } from "react";
 import { useTasks, Task } from "@/contexts/TasksContext";
+import { useAppMode } from "@/contexts/AppModeContext";
+import { ExpenseAnalytics } from "@/components/expenses/expense-analytics";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Cell } from "recharts";
 import { format, subDays, eachDayOfInterval, startOfDay, endOfDay, isWithinInterval, getDay, parseISO, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { Activity, TrendingUp, Calendar as CalendarIcon, Target } from "lucide-react";
 
 export default function AnalyticsPage() {
     const { tasks, projects } = useTasks();
+    const { mode } = useAppMode();
     const [timeRange, setTimeRange] = useState<"week" | "month" | "year">("week");
+
+    if (mode === "expenses") {
+        return (
+            <div className="space-y-6 animate-in fade-in duration-500 pb-10">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                            <Activity className="text-emerald-600" />
+                            Financial Analytics
+                        </h1>
+                        <p className="text-slate-500 text-sm mt-1">Deep dive into your spending habits and budget health</p>
+                    </div>
+                </div>
+                <ExpenseAnalytics />
+            </div>
+        );
+    }
+
+    // ... (rest of the task analytics logic)
 
     // 1. Dynamic Trend Data based on timeRange
     const getTrendData = () => {
