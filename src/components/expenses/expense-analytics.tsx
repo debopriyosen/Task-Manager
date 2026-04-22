@@ -90,6 +90,25 @@ export function ExpenseAnalytics() {
 
     const topCategory = categoryData.length > 0 ? categoryData[0] : null;
 
+    // Spending Forecast Logic
+    const forecastData = useMemo(() => {
+        const currentMonth = format(now, "yyyy-MM");
+        const monthExpenses = expenses.filter(e => e.date.startsWith(currentMonth));
+        const totalSpent = monthExpenses.reduce((acc, curr) => acc + curr.amount, 0);
+        
+        const dayOfMonth = now.getDate();
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        
+        const dailyAverage = totalSpent / Math.max(dayOfMonth, 1);
+        const forecastedTotal = dailyAverage * daysInMonth;
+        
+        return {
+            forecastedTotal,
+            isReliable: dayOfMonth >= 3,
+            dailyAverage
+        };
+    }, [expenses, now]);
+
     // Dynamic Trend Data based on timeRange
     const trendData = useMemo(() => {
         if (timeRange === "year") {
@@ -211,18 +230,26 @@ export function ExpenseAnalytics() {
                     </div>
                 </div>
 
-                <div className="relative bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-600 dark:from-indigo-900 dark:via-indigo-800 dark:to-purple-900 text-white rounded-2xl p-6 shadow-xl shadow-indigo-500/20 flex flex-col justify-between border border-white/10 dark:border-indigo-500/20 overflow-hidden group">
+                <div className="relative bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-600 dark:from-emerald-900 dark:via-emerald-800 dark:to-teal-900 text-white rounded-2xl p-6 shadow-xl shadow-emerald-500/20 flex flex-col justify-between border border-white/10 dark:border-emerald-500/20 overflow-hidden group">
                     <div className="absolute top-0 right-0 -mt-8 -mr-8 w-40 h-40 bg-white/10 rounded-full blur-2xl transition-transform duration-700 group-hover:scale-150"></div>
-                    <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-purple-500/20 rounded-full blur-xl transition-transform duration-700 group-hover:scale-150"></div>
+                    <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-teal-500/20 rounded-full blur-xl transition-transform duration-700 group-hover:scale-150"></div>
                     <div className="relative z-10">
-                        <p className="text-sm font-medium text-indigo-100">Total Tracked</p>
+                        <p className="text-sm font-medium text-emerald-100 flex items-center gap-1.5">
+                            Monthly Forecast
+                            {!forecastData.isReliable && <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded-full">Early Data</span>}
+                        </p>
                         <h3 className="text-3xl font-bold mt-1">
-                            ₹{expenses.reduce((acc, c) => acc + c.amount, 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ₹{forecastData.forecastedTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                         </h3>
                     </div>
-                    <p className="relative z-10 text-xs text-indigo-200 mt-4 opacity-80">
-                        Across {expenses.length} transactions
-                    </p>
+                    <div className="relative z-10 flex flex-col gap-1 mt-4">
+                        <p className="text-xs text-emerald-100/80">
+                            Daily Avg: ₹{forecastData.dailyAverage.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        </p>
+                        <p className="text-[10px] text-emerald-200/60 italic">
+                            Predicted total by end of {format(now, "MMMM")}
+                        </p>
+                    </div>
                 </div>
             </div>
 
