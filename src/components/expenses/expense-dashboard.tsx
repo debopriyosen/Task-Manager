@@ -1,165 +1,305 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Filter, Navigation, MoreVertical, Edit2, Trash2 } from "lucide-react";
-import { useExpenses, Expense, ExpenseCategory } from "@/contexts/ExpensesContext";
+import { useState, useMemo } from "react";
+import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, PiggyBank, Target, Wallet, ArrowRight } from "lucide-react";
+import { useExpenses, Expense, SavingsGoal } from "@/contexts/ExpensesContext";
 import { CreateExpenseModal, CATEGORY_COLORS } from "./create-expense-modal";
-import { ExpenseAnalytics } from "./expense-analytics";
 import { ExportReportButton } from "./export-report";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, subMonths, subDays, differenceInDays } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, CartesianGrid } from "recharts";
+import Link from "next/link";
 
 export function ExpenseDashboard() {
-    const { expenses, deleteExpense } = useExpenses();
+    const { expenses, deleteExpense, savingsGoals, monthlyBudget } = useExpenses();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null);
 
-    // Filters
-    const [filterCategory, setFilterCategory] = useState<string>("All");
-    const [filterMonth, setFilterMonth] = useState<string>(format(new Date(), "yyyy-MM"));
+    const now = new Date();
+    const currentMonthStr = format(now, "yyyy-MM");
+    const prevMonthStr = format(subMonths(now, 1), "yyyy-MM");
 
-    const filteredExpenses = expenses.filter(expense => {
-        const matchesCategory = filterCategory === "All" || expense.category === filterCategory;
-        const matchesMonth = filterMonth === "All" || expense.date.startsWith(filterMonth);
-        return matchesCategory && matchesMonth;
-    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    // === Computed Data ===
+    const monthlySpend = useMemo(() => {
+        return expenses.filter(e => e.date.startsWith(currentMonthStr)).reduce((a, c) => a + c.amount, 0);
+    }, [expenses, currentMonthStr]);
 
-    // Compute available months for filter
-    const availableMonths = Array.from(new Set(expenses.map(e => e.date.substring(0, 7)))).sort().reverse();
-    if (!availableMonths.includes(format(new Date(), "yyyy-MM"))) {
-        availableMonths.unshift(format(new Date(), "yyyy-MM"));
-    }
+    const prevMonthSpend = useMemo(() => {
+        return expenses.filter(e => e.date.startsWith(prevMonthStr)).reduce((a, c) => a + c.amount, 0);
+    }, [expenses, prevMonthStr]);
+
+    const monthTrend = prevMonthSpend === 0 ? 0 : ((monthlySpend - prevMonthSpend) / prevMonthSpend) * 100;
+
+    // Forecast
+    const forecast = useMemo(() => {
+        const dayOfMonth = now.getDate();
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const dailyAvg = monthlySpend / Math.max(dayOfMonth, 1);
+        return { total: dailyAvg * daysInMonth, dailyAvg, daysRemaining: daysInMonth - dayOfMonth };
+    }, [monthlySpend, now]);
+
+    // Category data for this month
+    const categoryData = useMemo(() => {
+        const map: Record<string, number> = {};
+        expenses.filter(e => e.date.startsWith(currentMonthStr)).forEach(e => {
+            map[e.category] = (map[e.category] || 0) + e.amount;
+        });
+        return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+    }, [expenses, currentMonthStr]);
+
+    // Last 7 days trend
+    const weeklyTrend = useMemo(() => {
+        const trends = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = subDays(now, i);
+            const dateStr = format(d, "yyyy-MM-dd");
+            const amt = expenses.filter(e => e.date === dateStr).reduce((a, c) => a + c.amount, 0);
+            trends.push({ name: format(d, "EEE"), total: amt });
+        }
+        return trends;
+    }, [expenses, now]);
+
+    // Recent expenses (last 5)
+    const recentExpenses = useMemo(() => {
+        return [...expenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+    }, [expenses]);
+
+    // Transactions today
+    const todayCount = expenses.filter(e => e.date === format(now, "yyyy-MM-dd")).length;
+    const todaySpend = expenses.filter(e => e.date === format(now, "yyyy-MM-dd")).reduce((a, c) => a + c.amount, 0);
+
+    // Active goals
+    const activeGoals = savingsGoals.filter(g => g.savedAmount < g.targetAmount).slice(0, 3);
+
+    const CATEGORY_PIE_COLORS: Record<string, string> = {
+        Groceries: "#eab308", Food: "#f97316", Entertainment: "#a855f7",
+        Travel: "#3b82f6", Investment: "#22c55e", Bills: "#f43f5e",
+        Shopping: "#ec4899", Others: "#64748b",
+    };
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="w-full sm:w-auto">
-                    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground flex flex-wrap items-center gap-x-2 gap-y-1">
-                        Expense Tracker
-                    </h1>
-                    <p className="text-muted-foreground mt-2 text-sm">Monitor your spending and analyze your finances.</p>
+        <div className="space-y-6 animate-in fade-in duration-500 pb-24">
+            {/* Header */}
+            <div>
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
+                    Good {now.getHours() < 12 ? "Morning" : now.getHours() < 17 ? "Afternoon" : "Evening"} 👋
+                </h1>
+                <p className="text-slate-500 text-sm mt-1">Here&apos;s your financial snapshot for {format(now, "MMMM yyyy")}</p>
+            </div>
+
+            {/* Top Stats Row */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Monthly Spend */}
+                <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-500/15 flex items-center justify-center">
+                            <Wallet size={18} className="text-emerald-600" />
+                        </div>
+                        {monthTrend !== 0 && (
+                            <div className={`text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 ${monthTrend > 0 ? "text-red-600 bg-red-50 dark:bg-red-500/10" : "text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10"}`}>
+                                {monthTrend > 0 ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                                {Math.abs(monthTrend).toFixed(1)}%
+                            </div>
+                        )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">This Month</p>
+                    <p className="text-xl font-bold text-foreground mt-0.5">₹{monthlySpend.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
                 </div>
-                <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm shadow-emerald-600/20 active:scale-95 hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap"
-                    >
-                        <Plus size={18} />
-                        <span>Add Expense</span>
-                    </button>
+
+                {/* Forecast */}
+                <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="w-9 h-9 rounded-xl bg-violet-100 dark:bg-violet-500/15 flex items-center justify-center">
+                            <TrendingUp size={18} className="text-violet-600" />
+                        </div>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Forecast</p>
+                    <p className="text-xl font-bold text-foreground mt-0.5">₹{forecast.total.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">{forecast.daysRemaining} days remaining</p>
+                </div>
+
+                {/* Today */}
+                <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-500/15 flex items-center justify-center">
+                            <Target size={18} className="text-amber-600" />
+                        </div>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Today</p>
+                    <p className="text-xl font-bold text-foreground mt-0.5">₹{todaySpend.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">{todayCount} transaction{todayCount !== 1 ? "s" : ""}</p>
+                </div>
+
+                {/* Daily Average */}
+                <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="w-9 h-9 rounded-xl bg-sky-100 dark:bg-sky-500/15 flex items-center justify-center">
+                            <PiggyBank size={18} className="text-sky-600" />
+                        </div>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Daily Avg</p>
+                    <p className="text-xl font-bold text-foreground mt-0.5">₹{forecast.dailyAvg.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">This month so far</p>
                 </div>
             </div>
 
-            {/* Analytics Section */}
-            <ExpenseAnalytics />
-
-            {/* Expenses List Section */}
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <h2 className="text-xl font-semibold text-foreground">Recent Expenses</h2>
-                    
-                    {/* Filters & Export */}
-                    <div className="flex flex-wrap items-center gap-2">
-                        <ExportReportButton expenses={filteredExpenses} filterMonth={filterMonth} />
-                        <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block mx-1"></div>
-                        <div className="relative">
-                            <select
-                                value={filterMonth}
-                                onChange={(e) => setFilterMonth(e.target.value)}
-                                className="pl-3 pr-8 py-2 rounded-lg bg-muted/50 border border-border hover:border-slate-300 outline-none text-sm text-foreground appearance-none cursor-pointer"
-                            >
-                                <option value="All">All Time</option>
-                                {availableMonths.map(m => (
-                                    <option key={m} value={m}>{format(parseISO(`${m}-01`), "MMMM yyyy")}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="relative">
-                            <select
-                                value={filterCategory}
-                                onChange={(e) => setFilterCategory(e.target.value)}
-                                className="pl-3 pr-8 py-2 rounded-lg bg-muted/50 border border-border hover:border-slate-300 outline-none text-sm text-foreground appearance-none cursor-pointer"
-                            >
-                                <option value="All">All Categories</option>
-                                {Object.keys(CATEGORY_COLORS).map(c => (
-                                    <option key={c} value={c}>{c}</option>
-                                ))}
-                            </select>
-                        </div>
+            {/* Middle Row: Weekly Chart + Category Breakdown */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+                {/* Weekly Spend Chart */}
+                <div className="lg:col-span-3 bg-card border border-border rounded-2xl p-5 shadow-sm">
+                    <h3 className="text-sm font-semibold text-foreground mb-4">Last 7 Days</h3>
+                    <div className="h-48">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={weeklyTrend} barSize={28}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                                <Tooltip
+                                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "12px", fontWeight: 600 }}
+                                    formatter={(value: number) => [`₹${value.toLocaleString("en-IN")}`, "Spent"]}
+                                />
+                                <Bar dataKey="total" fill="#10b981" radius={[8, 8, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
                     </div>
                 </div>
 
-                {filteredExpenses.length > 0 ? (
-                    <div className="space-y-3">
-                        <AnimatePresence mode="popLayout">
-                            {filteredExpenses.map(expense => (
-                                <motion.div 
-                                    layout
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.95, height: 0, overflow: 'hidden' }}
-                                    transition={{ duration: 0.2 }}
-                                    key={expense.id} 
-                                    className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-transparent hover:border-slate-200 dark:hover:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-all gap-4 sm:gap-0"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className={`px-3 py-1.5 text-xs font-bold rounded-full border shadow-sm ${CATEGORY_COLORS[expense.category]}`}>
-                                            {expense.category}
+                {/* Category Breakdown */}
+                <div className="lg:col-span-2 bg-card border border-border rounded-2xl p-5 shadow-sm">
+                    <h3 className="text-sm font-semibold text-foreground mb-4">By Category</h3>
+                    {categoryData.length > 0 ? (
+                        <div className="flex items-center gap-4">
+                            <div className="w-28 h-28 shrink-0">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie data={categoryData} dataKey="value" cx="50%" cy="50%" innerRadius={28} outerRadius={48} strokeWidth={2} stroke="hsl(var(--card))">
+                                            {categoryData.map((entry) => (
+                                                <Cell key={entry.name} fill={CATEGORY_PIE_COLORS[entry.name] || "#94a3b8"} />
+                                            ))}
+                                        </Pie>
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                            <div className="flex-1 space-y-2 overflow-hidden">
+                                {categoryData.slice(0, 4).map(cat => (
+                                    <div key={cat.name} className="flex items-center justify-between text-xs">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: CATEGORY_PIE_COLORS[cat.name] || "#94a3b8" }} />
+                                            <span className="text-muted-foreground truncate">{cat.name}</span>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{expense.notes || "No additional notes"}</p>
-                                            <p className="text-xs font-medium text-slate-500 mt-0.5">{format(parseISO(expense.date), "MMM d, yyyy")}</p>
+                                        <span className="font-bold text-foreground ml-2 shrink-0">₹{cat.value.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground text-center py-8">No data yet</p>
+                    )}
+                </div>
+            </div>
+
+            {/* Bottom Row: Goals + Recent Transactions */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                {/* Savings Goals */}
+                <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-foreground">Savings Goals</h3>
+                        <Link href="/dashboard/savings" className="text-xs font-medium text-emerald-600 hover:text-emerald-700 flex items-center gap-1 transition-colors">
+                            View All <ArrowRight size={12} />
+                        </Link>
+                    </div>
+                    {activeGoals.length > 0 ? (
+                        <div className="space-y-4">
+                            {activeGoals.map(goal => {
+                                const progress = (goal.savedAmount / goal.targetAmount) * 100;
+                                const daysLeft = differenceInDays(parseISO(goal.deadline), now);
+                                return (
+                                    <div key={goal.id} className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl flex items-center justify-center text-lg shrink-0">
+                                            {goal.emoji}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="text-xs font-semibold text-foreground truncate">{goal.name}</span>
+                                                <span className="text-[10px] text-muted-foreground ml-2 shrink-0">{daysLeft > 0 ? `${daysLeft}d left` : "Overdue"}</span>
+                                            </div>
+                                            <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${Math.min(progress, 100)}%` }}
+                                                    transition={{ duration: 0.8, ease: "easeOut" }}
+                                                    className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
+                                                />
+                                            </div>
+                                            <div className="flex justify-between mt-1">
+                                                <span className="text-[10px] text-emerald-600 font-bold">₹{goal.savedAmount.toLocaleString("en-IN")}</span>
+                                                <span className="text-[10px] text-muted-foreground">₹{goal.targetAmount.toLocaleString("en-IN")}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
-                                        <span className="font-bold text-slate-900 dark:text-slate-100 text-lg">₹{expense.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                        <div className="flex items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity gap-1">
-                                            <button 
-                                                onClick={() => setExpenseToEdit(expense)}
-                                                className="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
-                                            >
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button 
-                                                onClick={() => deleteExpense(expense.id)}
-                                                className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="text-center py-6">
+                            <p className="text-3xl mb-2">🎯</p>
+                            <p className="text-xs text-muted-foreground">No savings goals yet</p>
+                            <Link href="/dashboard/savings" className="mt-2 inline-block text-xs font-semibold text-emerald-600 hover:text-emerald-700">Create one →</Link>
+                        </div>
+                    )}
+                </div>
+
+                {/* Recent Transactions */}
+                <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-foreground">Recent Transactions</h3>
+                        <ExportReportButton expenses={expenses} filterMonth={currentMonthStr} />
+                    </div>
+                    {recentExpenses.length > 0 ? (
+                        <div className="space-y-3">
+                            {recentExpenses.map(expense => (
+                                <div key={expense.id} className="group flex items-center justify-between py-2 hover:bg-muted/30 -mx-2 px-2 rounded-lg transition-colors">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className={`w-2 h-8 rounded-full shrink-0`} style={{ backgroundColor: CATEGORY_PIE_COLORS[expense.category] || "#94a3b8" }} />
+                                        <div className="min-w-0">
+                                            <p className="text-xs font-semibold text-foreground truncate">{expense.notes || expense.category}</p>
+                                            <p className="text-[10px] text-muted-foreground">{format(parseISO(expense.date), "MMM d")} · {expense.category}</p>
                                         </div>
                                     </div>
-                                </motion.div>
+                                    <div className="flex items-center gap-2 shrink-0 ml-2">
+                                        <span className="text-sm font-bold text-foreground">₹{expense.amount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
+                                        <div className="flex opacity-0 group-hover:opacity-100 transition-opacity gap-0.5">
+                                            <button onClick={() => setExpenseToEdit(expense)} className="p-1 text-muted-foreground hover:text-emerald-600 rounded transition-colors"><Edit2 size={13} /></button>
+                                            <button onClick={() => deleteExpense(expense.id)} className="p-1 text-muted-foreground hover:text-red-500 rounded transition-colors"><Trash2 size={13} /></button>
+                                        </div>
+                                    </div>
+                                </div>
                             ))}
-                        </AnimatePresence>
-                    </div>
-                ) : (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex flex-col items-center justify-center text-center py-16 my-4 bg-emerald-50/30 dark:bg-emerald-950/10 rounded-3xl border border-dashed border-emerald-200/50 dark:border-emerald-800/50"
-                    >
-                        <div className="w-20 h-20 bg-white dark:bg-card rounded-2xl flex items-center justify-center text-emerald-500 mb-5 shadow-sm border border-emerald-100 dark:border-emerald-800/50 rotate-3">
-                            <span className="text-4xl">🧾</span>
                         </div>
-                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200">No expenses found</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-xs">You haven't tracked any expenses that match these filters yet.</p>
-                        <button 
-                            onClick={() => setIsModalOpen(true)}
-                            className="mt-6 text-emerald-600 hover:text-emerald-700 font-bold text-sm bg-emerald-50 hover:bg-emerald-100 px-6 py-2.5 rounded-xl transition-colors dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 dark:text-emerald-400"
-                        >
-                            Track an expense
-                        </button>
-                    </motion.div>
-                )}
+                    ) : (
+                        <div className="text-center py-6">
+                            <p className="text-3xl mb-2">🧾</p>
+                            <p className="text-xs text-muted-foreground">No transactions yet</p>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            <CreateExpenseModal 
-                isOpen={isModalOpen || !!expenseToEdit} 
+            {/* Floating Add Button */}
+            <button
+                onClick={() => setIsModalOpen(true)}
+                className="fixed bottom-8 right-8 w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-xl shadow-emerald-500/30 flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-50"
+                aria-label="Add Expense"
+            >
+                <Plus size={26} strokeWidth={2.5} />
+            </button>
+
+            <CreateExpenseModal
+                isOpen={isModalOpen || !!expenseToEdit}
                 onClose={() => {
                     setIsModalOpen(false);
                     setExpenseToEdit(null);
-                }} 
-                expenseToEdit={expenseToEdit} 
+                }}
+                expenseToEdit={expenseToEdit}
             />
         </div>
     );
