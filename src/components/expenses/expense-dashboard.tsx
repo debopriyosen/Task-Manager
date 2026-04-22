@@ -155,7 +155,7 @@ export function ExpenseDashboard() {
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
                                 <Tooltip
                                     contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "12px", fontWeight: 600 }}
-                                    formatter={(value: number) => [`₹${value.toLocaleString("en-IN")}`, "Spent"]}
+                                    formatter={(value: number | string | undefined) => [`₹${Number(value || 0).toLocaleString("en-IN")}`, "Spent"]}
                                 />
                                 <Bar dataKey="total" fill="#10b981" radius={[8, 8, 0, 0]} />
                             </BarChart>
