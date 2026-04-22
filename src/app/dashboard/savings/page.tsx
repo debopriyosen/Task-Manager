@@ -19,6 +19,7 @@ const EMOJIS = ["🎯", "💻", "🏠", "🚗", "✈️", "📱", "🎓", "💍"
 export default function SavingsPage() {
     const { savingsGoals, expenses, addSavingsGoal, addToSavings, deleteSavingsGoal, monthlyBudget } = useExpenses();
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null);
     const [showDepositModal, setShowDepositModal] = useState<string | null>(null);
     const [depositAmount, setDepositAmount] = useState("");
 
@@ -217,8 +218,16 @@ export default function SavingsPage() {
                                         </button>
                                     )}
                                     <button
+                                        onClick={() => setEditingGoal(goal)}
+                                        className="p-2.5 rounded-xl border border-border text-muted-foreground hover:text-indigo-500 hover:border-indigo-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all"
+                                        title="Edit Goal"
+                                    >
+                                        <Plus size={16} className="rotate-45" />
+                                    </button>
+                                    <button
                                         onClick={() => deleteSavingsGoal(goal.id)}
                                         className="p-2.5 rounded-xl border border-border text-muted-foreground hover:text-red-500 hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+                                        title="Delete Goal"
                                     >
                                         <Trash2 size={16} />
                                     </button>
@@ -260,10 +269,83 @@ export default function SavingsPage() {
                 )}
             </AnimatePresence>
 
-            {/* Create Goal Modal */}
+            {/* Create / Edit Goal Modals */}
             <AnimatePresence>
                 {showCreateModal && <CreateGoalModal onClose={() => setShowCreateModal(false)} />}
+                {editingGoal && <EditGoalModal goal={editingGoal} onClose={() => setEditingGoal(null)} />}
             </AnimatePresence>
+        </div>
+    );
+}
+
+function EditGoalModal({ goal, onClose }: { goal: SavingsGoal, onClose: () => void }) {
+    const { updateSavingsGoal } = useExpenses();
+    const [name, setName] = useState(goal.name);
+    const [emoji, setEmoji] = useState(goal.emoji);
+    const [target, setTarget] = useState(goal.targetAmount.toString());
+    const [deadline, setDeadline] = useState(goal.deadline);
+    const [color, setColor] = useState(goal.color);
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!name || !target || !deadline) return;
+        updateSavingsGoal(goal.id, { name, emoji, targetAmount: Number(target), deadline, color });
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-card border border-border rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden">
+                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-xl font-bold flex items-center gap-2"><Target size={22} /> Edit Savings Goal</h2>
+                        <button onClick={onClose} className="p-1.5 hover:bg-white/20 rounded-lg"><X size={20} /></button>
+                    </div>
+                    <p className="text-indigo-100 text-sm mt-1">Update your target details</p>
+                </div>
+                <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                    <div>
+                        <label className="text-sm font-medium text-muted-foreground block mb-2">Pick an Icon</label>
+                        <div className="flex flex-wrap gap-2">
+                            {EMOJIS.map(e => (
+                                <button type="button" key={e} onClick={() => setEmoji(e)} className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-all ${emoji === e ? "bg-indigo-100 dark:bg-indigo-500/20 ring-2 ring-indigo-500 scale-110" : "bg-muted hover:bg-indigo-50 dark:hover:bg-indigo-500/10"}`}>
+                                    {e}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="text-sm font-medium text-muted-foreground">Goal Name</label>
+                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full mt-1 bg-muted border border-border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 font-medium" placeholder='e.g. "New MacBook Pro"' required />
+                    </div>
+
+                    <div>
+                        <label className="text-sm font-medium text-muted-foreground">Target Amount (₹)</label>
+                        <input type="number" value={target} onChange={(e) => setTarget(e.target.value)} className="w-full mt-1 bg-muted border border-border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-lg" placeholder="e.g. 60000" required />
+                    </div>
+
+                    <div>
+                        <label className="text-sm font-medium text-muted-foreground">Target Date</label>
+                        <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="w-full mt-1 bg-muted border border-border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 font-medium" required />
+                    </div>
+
+                    {/* Color */}
+                    <div>
+                        <label className="text-sm font-medium text-muted-foreground block mb-2">Theme Color</label>
+                        <div className="flex gap-3">
+                            {GOAL_COLORS.map(c => (
+                                <button type="button" key={c.name} onClick={() => setColor(c.name)} className={`w-8 h-8 rounded-full ${c.bg} transition-all ${color === c.name ? "ring-2 ring-offset-2 ring-offset-card ring-indigo-500 scale-110" : "opacity-60 hover:opacity-100"}`} />
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                        <button type="button" onClick={onClose} className="flex-1 px-4 py-3 rounded-xl border border-border font-medium hover:bg-muted transition-colors">Cancel</button>
+                        <button type="submit" className="flex-1 px-4 py-3 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 dark:shadow-none">Update Goal</button>
+                    </div>
+                </form>
+            </motion.div>
         </div>
     );
 }
