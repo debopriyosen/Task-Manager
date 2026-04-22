@@ -3,7 +3,7 @@
 import { useExpenses } from "@/contexts/ExpensesContext";
 import { CATEGORY_COLORS } from "./create-expense-modal";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { format, parseISO, subMonths, subDays } from "date-fns";
+import { format, parseISO, subMonths, subDays, startOfDay } from "date-fns";
 import { useMemo, useState } from "react";
 import { TrendingUp, TrendingDown, IndianRupee, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,21 +14,75 @@ export function ExpenseAnalytics() {
     const [tempBudget, setTempBudget] = useState(monthlyBudget.toString());
     const [timeRange, setTimeRange] = useState<"week" | "month" | "year">("month");
 
-    // Setup Analytics Data
+    // Setup Range-Aware Analytics Data
     const now = new Date();
-    const currentMonth = format(now, "yyyy-MM");
-    const lastMonth = format(subMonths(now, 1), "yyyy-MM");
-
-    const currentMonthExpenses = expenses.filter(e => e.date.startsWith(currentMonth));
-    const totalCurrentMonth = currentMonthExpenses.reduce((acc, curr) => acc + curr.amount, 0);
     
+    const rangeData = useMemo(() => {
+        let currentTotal = 0;
+        let previousTotal = 0;
+        let label = "";
+        let subLabel = "";
+
+        if (timeRange === "week") {
+            const startOfThisWeek = subDays(now, 6);
+            const startOfLastWeek = subDays(now, 13);
+            
+            currentTotal = expenses
+                .filter(e => parseISO(e.date) >= startOfDay(startOfThisWeek))
+                .reduce((acc, curr) => acc + curr.amount, 0);
+            
+            previousTotal = expenses
+                .filter(e => {
+                    const date = parseISO(e.date);
+                    return date >= startOfDay(startOfLastWeek) && date < startOfDay(startOfThisWeek);
+                })
+                .reduce((acc, curr) => acc + curr.amount, 0);
+            
+            label = "This Week";
+            subLabel = "vs last week";
+        } else if (timeRange === "year") {
+            const currentYear = format(now, "yyyy");
+            const lastYear = (parseInt(currentYear) - 1).toString();
+            
+            currentTotal = expenses
+                .filter(e => e.date.startsWith(currentYear))
+                .reduce((acc, curr) => acc + curr.amount, 0);
+            
+            previousTotal = expenses
+                .filter(e => e.date.startsWith(lastYear))
+                .reduce((acc, curr) => acc + curr.amount, 0);
+            
+            label = "This Year";
+            subLabel = "vs last year";
+        } else {
+            // Default: month
+            const currentMonth = format(now, "yyyy-MM");
+            const lastMonth = format(subMonths(now, 1), "yyyy-MM");
+            
+            currentTotal = expenses
+                .filter(e => e.date.startsWith(currentMonth))
+                .reduce((acc, curr) => acc + curr.amount, 0);
+            
+            previousTotal = expenses
+                .filter(e => e.date.startsWith(lastMonth))
+                .reduce((acc, curr) => acc + curr.amount, 0);
+            
+            label = "This Month";
+            subLabel = "vs last month";
+        }
+
+        const trend = previousTotal === 0 ? (currentTotal > 0 ? 100 : 0) : ((currentTotal - previousTotal) / previousTotal) * 100;
+        
+        return { currentTotal, previousTotal, trend, label, subLabel };
+    }, [expenses, timeRange, now]);
+
+    const { currentTotal, trend, label, subLabel } = rangeData;
+
+    // Budget stuff (always monthly)
+    const currentMonthStr = format(now, "yyyy-MM");
+    const totalCurrentMonth = expenses.filter(e => e.date.startsWith(currentMonthStr)).reduce((acc, curr) => acc + curr.amount, 0);
     const budgetProgress = monthlyBudget > 0 ? (totalCurrentMonth / monthlyBudget) * 100 : 0;
     const isOverBudget = totalCurrentMonth > monthlyBudget && monthlyBudget > 0;
-
-    const lastMonthExpenses = expenses.filter(e => e.date.startsWith(lastMonth));
-    const totalLastMonth = lastMonthExpenses.reduce((acc, curr) => acc + curr.amount, 0);
-
-    const trend = totalLastMonth === 0 ? 100 : ((totalCurrentMonth - totalLastMonth) / totalLastMonth) * 100;
 
     const handleBudgetSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,15 +90,17 @@ export function ExpenseAnalytics() {
         setIsEditingBudget(false);
     };
 
-    const categoryDataMap = expenses.reduce((acc, curr) => {
-        if (!acc[curr.category]) acc[curr.category] = 0;
-        acc[curr.category] += curr.amount;
-        return acc;
-    }, {} as Record<string, number>);
+    const categoryDataMap = useMemo(() => {
+        return expenses.reduce((acc, curr) => {
+            if (!acc[curr.category]) acc[curr.category] = 0;
+            acc[curr.category] += curr.amount;
+            return acc;
+        }, {} as Record<string, number>);
+    }, [expenses]);
 
     const categoryData = Object.entries(categoryDataMap)
         .map(([name, value]) => ({ name, value }))
-        .sort((a, b) => b.value - a.value); // sort so top is first
+        .sort((a, b) => b.value - a.value);
 
     const topCategory = categoryData.length > 0 ? categoryData[0] : null;
 
@@ -137,8 +193,8 @@ export function ExpenseAnalytics() {
                 <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
                     <div className="flex justify-between items-start">
                         <div>
-                            <p className="text-sm font-medium text-muted-foreground">This Month</p>
-                            <h3 className="text-3xl font-bold text-foreground mt-1">₹{totalCurrentMonth.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
+                            <p className="text-sm font-medium text-muted-foreground">{label}</p>
+                            <h3 className="text-3xl font-bold text-foreground mt-1">₹{currentTotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
                         </div>
                         <div className="mt-1 flex flex-col items-end gap-1">
                              {trend > 0 ? (
@@ -150,7 +206,7 @@ export function ExpenseAnalytics() {
                                     <TrendingDown size={12} /> {trend.toFixed(1)}%
                                 </div>
                             )}
-                            <span className="text-[10px] text-muted-foreground">vs last month</span>
+                            <span className="text-[10px] text-muted-foreground">{subLabel}</span>
                         </div>
                     </div>
                     
