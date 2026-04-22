@@ -3,7 +3,7 @@
 import { useExpenses } from "@/contexts/ExpensesContext";
 import { CATEGORY_COLORS } from "./create-expense-modal";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { format, parseISO, subMonths } from "date-fns";
+import { format, parseISO, subMonths, subDays } from "date-fns";
 import { useMemo, useState } from "react";
 import { TrendingUp, TrendingDown, IndianRupee, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
