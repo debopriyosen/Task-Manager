@@ -4,23 +4,36 @@ import { useExpenses } from "@/contexts/ExpensesContext";
 import { CATEGORY_COLORS } from "./create-expense-modal";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { format, parseISO, subMonths } from "date-fns";
-import { useMemo } from "react";
-import { TrendingUp, TrendingDown, IndianRupee } from "lucide-react";
+import { useMemo, useState } from "react";
+import { TrendingUp, TrendingDown, IndianRupee, AlertCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function ExpenseAnalytics() {
-    const { expenses } = useExpenses();
+    const { expenses, monthlyBudget, setMonthlyBudget } = useExpenses();
+    const [isEditingBudget, setIsEditingBudget] = useState(false);
+    const [tempBudget, setTempBudget] = useState(monthlyBudget.toString());
 
     // Setup Analytics Data
-    const currentMonth = format(new Date(), "yyyy-MM");
-    const lastMonth = format(subMonths(new Date(), 1), "yyyy-MM");
+    const now = new Date();
+    const currentMonth = format(now, "yyyy-MM");
+    const lastMonth = format(subMonths(now, 1), "yyyy-MM");
 
     const currentMonthExpenses = expenses.filter(e => e.date.startsWith(currentMonth));
-    const lastMonthExpenses = expenses.filter(e => e.date.startsWith(lastMonth));
-
     const totalCurrentMonth = currentMonthExpenses.reduce((acc, curr) => acc + curr.amount, 0);
+    
+    const budgetProgress = monthlyBudget > 0 ? (totalCurrentMonth / monthlyBudget) * 100 : 0;
+    const isOverBudget = totalCurrentMonth > monthlyBudget && monthlyBudget > 0;
+
+    const lastMonthExpenses = expenses.filter(e => e.date.startsWith(lastMonth));
     const totalLastMonth = lastMonthExpenses.reduce((acc, curr) => acc + curr.amount, 0);
 
     const trend = totalLastMonth === 0 ? 100 : ((totalCurrentMonth - totalLastMonth) / totalLastMonth) * 100;
+
+    const handleBudgetSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setMonthlyBudget(Number(tempBudget));
+        setIsEditingBudget(false);
+    };
 
     const categoryDataMap = expenses.reduce((acc, curr) => {
         if (!acc[curr.category]) acc[curr.category] = 0;
@@ -47,9 +60,6 @@ export function ExpenseAnalytics() {
 
     // Used for Pie Chart colors
     const getBorderColorClass = (category: string) => {
-        const cls = CATEGORY_COLORS[category as keyof typeof CATEGORY_COLORS] || "";
-        // Simple extraction of hex equivalent for Recharts (since it's raw svg). 
-        // Best approach for Recharts Pie in Tailwind is via mapped arrays.
         const map: Record<string, string> = {
             Groceries: "#14b8a6",
             Food: "#f97316",
@@ -80,21 +90,48 @@ export function ExpenseAnalytics() {
             {/* Highlights Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="bg-card border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-muted-foreground">This Month</p>
-                        <h3 className="text-3xl font-bold text-foreground mt-1">₹{totalCurrentMonth.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">This Month</p>
+                            <h3 className="text-3xl font-bold text-foreground mt-1">₹{totalCurrentMonth.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h3>
+                        </div>
+                        <div className="mt-1 flex flex-col items-end gap-1">
+                             {trend > 0 ? (
+                                <div className="text-red-500 flex items-center gap-1 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded-full font-medium text-xs">
+                                    <TrendingUp size={12} /> +{trend.toFixed(1)}%
+                                </div>
+                            ) : (
+                                <div className="text-emerald-500 flex items-center gap-1 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full font-medium text-xs">
+                                    <TrendingDown size={12} /> {trend.toFixed(1)}%
+                                </div>
+                            )}
+                            <span className="text-[10px] text-muted-foreground">vs last month</span>
+                        </div>
                     </div>
-                    <div className="mt-4 flex items-center gap-1.5 text-sm">
-                        {trend > 0 ? (
-                            <div className="text-red-500 flex items-center gap-1 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded-full font-medium">
-                                <TrendingUp size={14} /> +{trend.toFixed(1)}%
-                            </div>
-                        ) : (
-                            <div className="text-emerald-500 flex items-center gap-1 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded-full font-medium">
-                                <TrendingDown size={14} /> {trend.toFixed(1)}%
-                            </div>
+                    
+                    {/* Budget Progress Bar */}
+                    <div className="mt-6 space-y-2">
+                        <div className="flex justify-between items-center text-xs">
+                            <span className="text-muted-foreground font-medium">Monthly Budget</span>
+                            <button 
+                                onClick={() => setIsEditingBudget(true)}
+                                className="text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
+                            >
+                                {monthlyBudget > 0 ? `₹${monthlyBudget.toLocaleString()}` : "Set Budget"}
+                            </button>
+                        </div>
+                        <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${Math.min(budgetProgress, 100)}%` }}
+                                className={`h-full rounded-full ${isOverBudget ? 'bg-red-500' : 'bg-indigo-500'}`}
+                            />
+                        </div>
+                        {isOverBudget && (
+                            <p className="text-[10px] text-red-500 font-bold flex items-center gap-1">
+                                <AlertCircle size={10} /> Over budget by ₹{(totalCurrentMonth - monthlyBudget).toLocaleString()}
+                            </p>
                         )}
-                        <span className="text-muted-foreground ml-1">vs last month</span>
                     </div>
                 </div>
 
@@ -126,6 +163,50 @@ export function ExpenseAnalytics() {
                     </p>
                 </div>
             </div>
+
+            {/* Budget Edit Modal */}
+            <AnimatePresence>
+                {isEditingBudget && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+                        <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-xl"
+                        >
+                            <h3 className="text-lg font-bold mb-4">Set Monthly Budget</h3>
+                            <form onSubmit={handleBudgetSubmit} className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-muted-foreground">Monthly Limit (₹)</label>
+                                    <input 
+                                        type="number"
+                                        value={tempBudget}
+                                        onChange={(e) => setTempBudget(e.target.value)}
+                                        className="w-full bg-muted border border-border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-bold text-lg"
+                                        placeholder="e.g. 50000"
+                                        autoFocus
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setIsEditingBudget(false)}
+                                        className="flex-1 px-4 py-2.5 rounded-xl border border-border font-medium hover:bg-muted transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button 
+                                        type="submit"
+                                        className="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors"
+                                    >
+                                        Save Budget
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Category Pie Chart */}

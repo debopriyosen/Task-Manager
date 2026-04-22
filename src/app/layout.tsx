@@ -4,6 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TasksProvider } from "@/contexts/TasksContext";
 import { ExpensesProvider } from "@/contexts/ExpensesContext";
+import { AppModeProvider } from "@/contexts/AppModeContext";
+import { WeeklyExpenseReminder } from "@/components/expenses/weekly-expense-reminder";
 
 const font = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
@@ -43,7 +45,10 @@ export default function RootLayout({
         >
           <TasksProvider>
             <ExpensesProvider>
-              {children}
+              <AppModeProvider>
+                <WeeklyExpenseReminder />
+                {children}
+              </AppModeProvider>
             </ExpensesProvider>
           </TasksProvider>
         </ThemeProvider>

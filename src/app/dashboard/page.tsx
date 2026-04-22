@@ -6,13 +6,14 @@ import { CreateTaskModal } from "@/components/tasks/create-task-modal";
 import { CreateProjectModal } from "@/components/projects/create-project-modal";
 import { ExpenseDashboard } from "@/components/expenses/expense-dashboard";
 import { useTasks, Task } from "@/contexts/TasksContext";
+import { useAppMode } from "@/contexts/AppModeContext";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 
 export default function DashboardPage() {
     const { tasks, reminders, toggleTaskStatus, projects, userName } = useTasks();
-    const [activeTab, setActiveTab] = useState<"tasks" | "expenses">("tasks");
+    const { mode } = useAppMode();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
     const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
@@ -122,7 +123,7 @@ export default function DashboardPage() {
     };
 
     const pendingPriorityTasks = tasks.filter(t => (t.status === "pending" || t.status === "on_track") && t.priority === "high").slice(0, 5);
-    const upcomingTasks = tasks.filter(t => (t.status === "pending" || t.status === "on_track") && t.due_date && new Date(t.due_date) >= new Date()).sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime()).slice(0, 4);
+    const upcomingTasks = tasks.filter(t => (t.status === "pending" || t.status === "on_track") && t.due_date && new Date(t.due_date!) >= new Date()).sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime()).slice(0, 4);
 
     const todayString = format(new Date(), "yyyy-MM-dd");
     const todayReminders = reminders.filter(r => r.date === todayString);
@@ -138,25 +139,8 @@ export default function DashboardPage() {
 
     return (
         <div className="relative flex flex-col w-full">
-            <div className="flex justify-center mb-10">
-                <div className="bg-slate-100/80 dark:bg-slate-900/50 p-2 rounded-[1.25rem] flex items-center gap-2 border border-slate-200/60 dark:border-slate-800/60 shadow-inner max-w-md w-full sm:w-auto mt-2">
-                    <button 
-                        onClick={() => setActiveTab("tasks")}
-                        className={`flex-1 sm:flex-none sm:w-44 py-3.5 rounded-xl text-sm sm:text-base font-bold transition-all duration-300 ${activeTab === 'tasks' ? 'bg-white dark:bg-slate-800 shadow-md text-indigo-600 dark:text-indigo-400 transform scale-[1.02] ring-1 ring-slate-900/5 dark:ring-white/10' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'}`}
-                    >
-                        Task Manager
-                    </button>
-                    <button 
-                        onClick={() => setActiveTab("expenses")}
-                        className={`flex-1 sm:flex-none sm:w-44 py-3.5 rounded-xl text-sm sm:text-base font-bold transition-all duration-300 ${activeTab === 'expenses' ? 'bg-white dark:bg-slate-800 shadow-md text-emerald-600 dark:text-emerald-400 transform scale-[1.02] ring-1 ring-slate-900/5 dark:ring-white/10' : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'}`}
-                    >
-                        Expense Tracker
-                    </button>
-                </div>
-            </div>
-
             <AnimatePresence mode="wait">
-                {activeTab === "expenses" ? (
+                {mode === "expenses" ? (
                     <motion.div
                         key="expenses"
                         initial={{ opacity: 0, y: 15 }}
@@ -182,7 +166,7 @@ export default function DashboardPage() {
                         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 flex flex-wrap items-center gap-x-2 gap-y-1">
                             <span>{getGreeting()}</span> <span className="text-blue-600 dark:text-blue-400 font-extrabold break-all">{userName}</span>
                         </h1>
-                        <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">Here's your productivity overview for today.</p>
+                        <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">Here&apos;s your productivity overview for today.</p>
                     </div>
                     <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3 w-full sm:w-auto mt-2 sm:mt-0">
                         <button
@@ -280,7 +264,7 @@ export default function DashboardPage() {
                         {(todayReminders.length > 0) && (
                             <div className="bg-card border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-900/10 rounded-2xl p-6 shadow-sm">
                                 <h2 className="text-lg font-semibold mb-4 text-indigo-900 dark:text-indigo-100 flex items-center gap-2">
-                                    <Clock size={18} /> Today's Reminders
+                                    <Clock size={18} /> Today&apos;s Reminders
                                 </h2>
                                 <div className="space-y-3">
                                     {todayReminders.map(r => (

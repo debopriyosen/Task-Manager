@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CalendarDays, CheckCircle2, ListTodo, Settings, Folder, Plus, Activity } from "lucide-react";
+import { LayoutDashboard, CalendarDays, CheckCircle2, ListTodo, Settings, Folder, Activity, PieChart, TrendingUp, Receipt, Target, Wallet } from "lucide-react";
 import { useTasks } from "@/contexts/TasksContext";
-import { useState } from "react";
-import { CreateTaskModal } from "@/components/tasks/create-task-modal";
+import { useAppMode } from "@/contexts/AppModeContext";
 
 interface SidebarProps {
     isOpen: boolean;
@@ -15,9 +14,9 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const pathname = usePathname();
     const { projects } = useTasks();
-    const [selectedProjectId, setSelectedProjectId] = useState<string>("none");
+    const { mode } = useAppMode();
 
-    const navItems = [
+    const taskNavItems = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
         { name: "Analytics", href: "/dashboard/analytics", icon: Activity },
         { name: "Subjects", href: "/dashboard/projects", icon: Folder },
@@ -27,6 +26,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         { name: "Completed", href: "/dashboard/completed", icon: CheckCircle2 },
     ];
 
+    const expenseNavItems = [
+        { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+        { name: "Analytics", href: "/dashboard/analytics", icon: PieChart },
+    ];
+
+    const navItems = mode === "tasks" ? taskNavItems : expenseNavItems;
+    const accentColor = mode === "expenses" ? "emerald" : "indigo";
+
     return (
         <>
             {isOpen && (
@@ -35,11 +42,19 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     onClick={onClose}
                 />
             )}
-            <aside className={`fixed inset-y-0 left-0 z-50 w-72 md:w-64 bg-slate-900 dark:bg-slate-950 border-r border-slate-800 text-slate-200 h-screen flex flex-col transition-transform duration-300 md:sticky md:top-0 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
-                <div className="h-16 px-6 border-b border-slate-800 flex items-center shrink-0">
+            <aside className={`fixed inset-y-0 left-0 z-50 w-72 md:w-64 ${
+                mode === "expenses" 
+                    ? "bg-emerald-950 dark:bg-emerald-950 border-emerald-800" 
+                    : "bg-slate-900 dark:bg-slate-950 border-slate-800"
+            } border-r text-slate-200 h-screen flex flex-col transition-all duration-300 md:sticky md:top-0 md:translate-x-0 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}>
+                <div className={`h-16 px-6 border-b ${
+                    mode === "expenses" ? "border-emerald-800" : "border-slate-800"
+                } flex items-center shrink-0`}>
                     <Link href="/dashboard" className="flex items-center gap-2 group w-fit" onClick={onClose}>
-                        <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-6 group-hover:shadow-indigo-500/20">
-                            <CheckCircle2 size={20} className="transition-transform duration-300 group-hover:scale-110" />
+                        <div className={`w-8 h-8 rounded-xl ${
+                            mode === "expenses" ? "bg-emerald-600" : "bg-indigo-600"
+                        } flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-6`}>
+                            {mode === "expenses" ? <Wallet size={20} /> : <CheckCircle2 size={20} />}
                         </div>
                         <span className="text-xl font-bold text-white transition-opacity duration-300 group-hover:opacity-80">
                             Planora
@@ -47,11 +62,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     </Link>
                 </div>
 
-                <div className="flex-1 flex flex-col bg-slate-900 dark:bg-slate-950 overflow-hidden">
+                <div className={`flex-1 flex flex-col ${
+                    mode === "expenses" ? "bg-emerald-950 dark:bg-emerald-950" : "bg-slate-900 dark:bg-slate-950"
+                } overflow-hidden`}>
 
                     <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
-                        <p className="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                            Tasks
+                        <p className={`px-4 text-xs font-semibold uppercase tracking-wider mb-2 ${
+                            mode === "expenses" ? "text-emerald-500" : "text-slate-500"
+                        }`}>
+                            {mode === "expenses" ? "Finance" : "Tasks"}
                         </p>
                         {navItems.map((item) => {
                             const isActive = pathname === item.href;
@@ -63,8 +82,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                                     href={item.href}
                                     onClick={onClose}
                                     className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 ${isActive
-                                        ? "bg-indigo-600 text-white font-medium shadow-sm"
-                                        : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                                        ? `${mode === "expenses" ? "bg-emerald-600" : "bg-indigo-600"} text-white font-medium shadow-sm`
+                                        : `${mode === "expenses" ? "text-emerald-300/70 hover:bg-emerald-900 hover:text-white" : "text-slate-400 hover:bg-slate-800 hover:text-white"}`
                                         }`}
                                 >
                                     <Icon size={18} />
@@ -73,7 +92,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                             );
                         })}
 
-                        {projects.length > 0 && (
+                        {/* Projects - only in tasks mode */}
+                        {mode === "tasks" && projects.length > 0 && (
                             <>
                                 <p className="px-4 mt-8 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                                     Subjects
@@ -99,11 +119,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         )}
                     </nav>
 
-                    <div className="p-4 mt-auto border-t border-slate-800 shrink-0">
+                    <div className={`p-4 mt-auto border-t ${
+                        mode === "expenses" ? "border-emerald-800" : "border-slate-800"
+                    } shrink-0`}>
                         <Link
                             href="/dashboard/settings"
                             onClick={onClose}
-                            className="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white"
+                            className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 ${
+                                mode === "expenses" 
+                                    ? "text-emerald-300/70 hover:bg-emerald-900 hover:text-white" 
+                                    : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                            }`}
                         >
                             <Settings size={18} />
                             Settings

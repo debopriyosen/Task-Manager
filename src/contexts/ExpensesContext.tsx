@@ -25,15 +25,18 @@ export interface Expense {
 
 interface ExpensesContextType {
     expenses: Expense[];
+    monthlyBudget: number;
     addExpense: (expense: Omit<Expense, "id" | "created_at">) => void;
     updateExpense: (id: string, updates: Partial<Expense>) => void;
     deleteExpense: (id: string) => void;
+    setMonthlyBudget: (budget: number) => void;
 }
 
 const ExpensesContext = createContext<ExpensesContextType | undefined>(undefined);
 
 export function ExpensesProvider({ children }: { children: React.ReactNode }) {
     const [expenses, setExpenses] = useState<Expense[]>([]);
+    const [monthlyBudget, setMonthlyBudget] = useState<number>(0);
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Load from LocalStorage
@@ -46,6 +49,10 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
                 console.error("Failed to parse expenses");
             }
         }
+        const savedBudget = localStorage.getItem("planora_budget");
+        if (savedBudget) {
+            setMonthlyBudget(Number(savedBudget));
+        }
         setIsLoaded(true);
     }, []);
 
@@ -53,8 +60,9 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         if (isLoaded) {
             localStorage.setItem("planora_expenses", JSON.stringify(expenses));
+            localStorage.setItem("planora_budget", String(monthlyBudget));
         }
-    }, [expenses, isLoaded]);
+    }, [expenses, monthlyBudget, isLoaded]);
 
     const triggerConfetti = () => {
         if (typeof window !== "undefined") {
@@ -91,9 +99,11 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
         <ExpensesContext.Provider
             value={{
                 expenses,
+                monthlyBudget,
                 addExpense,
                 updateExpense,
                 deleteExpense,
+                setMonthlyBudget,
             }}
         >
             {children}
