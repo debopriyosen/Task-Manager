@@ -307,7 +307,7 @@ export default function InsightsPage() {
                                     <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))", fontWeight: 600 }} width={90} />
                                     <Tooltip
                                         contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "12px", fontSize: "12px", fontWeight: 600 }}
-                                        formatter={(value: number | string | undefined, name: string) => [`₹${Number(value || 0).toLocaleString("en-IN")}`, name === "monthA" ? formatMonth(monthA) : formatMonth(monthB)]}
+                                        formatter={(value: number | string | undefined, name: string | undefined) => [`₹${Number(value || 0).toLocaleString("en-IN")}`, name === "monthA" ? formatMonth(monthA) : formatMonth(monthB)]}
                                     />
                                     <Bar dataKey="monthA" fill="#6366f1" radius={[0, 6, 6, 0]} name="monthA" />
                                     <Bar dataKey="monthB" fill="#10b981" radius={[0, 6, 6, 0]} name="monthB" />
