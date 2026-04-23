@@ -22,41 +22,41 @@ const INITIAL_MARKETS: MarketItem[] = [
         id: "sensex",
         name: "BSE SENSEX",
         symbol: "^BSESN",
-        price: 74248.22,
-        change: 350.15,
-        changePercent: 0.47,
+        price: 77664.00,
+        change: -850.50,
+        changePercent: -1.09,
         type: "index",
-        history: Array.from({ length: 20 }, (_, i) => ({ time: `${i}`, value: 74000 + Math.random() * 500 }))
+        history: Array.from({ length: 20 }, (_, i) => ({ time: `${i}`, value: 77000 + Math.random() * 1000 }))
     },
     {
         id: "nifty",
         name: "NIFTY 50",
         symbol: "^NSEI",
-        price: 22514.65,
-        change: 110.20,
-        changePercent: 0.49,
+        price: 24173.05,
+        change: -205.20,
+        changePercent: -0.84,
         type: "index",
-        history: Array.from({ length: 20 }, (_, i) => ({ time: `${i}`, value: 22400 + Math.random() * 200 }))
+        history: Array.from({ length: 20 }, (_, i) => ({ time: `${i}`, value: 24000 + Math.random() * 400 }))
     },
     {
         id: "gold",
         name: "Gold (24K)",
         symbol: "XAU/INR",
-        price: 72450.00,
-        change: -120.50,
-        changePercent: -0.17,
+        price: 154750.00,
+        change: 1250.00,
+        changePercent: 0.81,
         type: "commodity",
-        history: Array.from({ length: 20 }, (_, i) => ({ time: `${i}`, value: 72000 + Math.random() * 1000 }))
+        history: Array.from({ length: 20 }, (_, i) => ({ time: `${i}`, value: 153000 + Math.random() * 2000 }))
     },
     {
         id: "silver",
         name: "Silver",
         symbol: "XAG/INR",
-        price: 83120.00,
-        change: 450.00,
-        changePercent: 0.54,
+        price: 260000.00,
+        change: 4500.00,
+        changePercent: 1.76,
         type: "commodity",
-        history: Array.from({ length: 20 }, (_, i) => ({ time: `${i}`, value: 82000 + Math.random() * 2000 }))
+        history: Array.from({ length: 20 }, (_, i) => ({ time: `${i}`, value: 255000 + Math.random() * 10000 }))
     }
 ];
 

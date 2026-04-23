@@ -34,6 +34,16 @@ export interface SavingsGoal {
     created_at: string;
 }
 
+export interface InvestmentHolding {
+    id: string;
+    assetId: string; // "sensex", "nifty", "gold", "silver"
+    name: string;
+    quantity: number;
+    buyPrice: number;
+    date: string;
+    created_at: string;
+}
+
 interface ExpensesContextType {
     expenses: Expense[];
     monthlyBudget: number;
@@ -48,6 +58,10 @@ interface ExpensesContextType {
     updateSavingsGoal: (id: string, updates: Partial<SavingsGoal>) => void;
     deleteSavingsGoal: (id: string) => void;
     addToSavings: (goalId: string, amount: number) => void;
+    holdings: InvestmentHolding[];
+    addHolding: (holding: Omit<InvestmentHolding, "id" | "created_at">) => void;
+    updateHolding: (id: string, updates: Partial<InvestmentHolding>) => void;
+    deleteHolding: (id: string) => void;
 }
 
 const ExpensesContext = createContext<ExpensesContextType | undefined>(undefined);
@@ -57,6 +71,7 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
     const [monthlyBudget, setMonthlyBudget] = useState<number>(0);
     const [monthlyIncome, setMonthlyIncome] = useState<number>(0);
     const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
+    const [holdings, setHoldings] = useState<InvestmentHolding[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Load from LocalStorage
@@ -85,6 +100,14 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
         if (savedIncome) {
             setMonthlyIncome(Number(savedIncome));
         }
+        const savedHoldings = localStorage.getItem("planora_holdings");
+        if (savedHoldings) {
+            try {
+                setHoldings(JSON.parse(savedHoldings));
+            } catch (e) {
+                console.error("Failed to parse holdings");
+            }
+        }
         setIsLoaded(true);
     }, []);
 
@@ -95,8 +118,9 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("planora_budget", String(monthlyBudget));
             localStorage.setItem("planora_income", String(monthlyIncome));
             localStorage.setItem("planora_savings_goals", JSON.stringify(savingsGoals));
+            localStorage.setItem("planora_holdings", JSON.stringify(holdings));
         }
-    }, [expenses, monthlyBudget, monthlyIncome, savingsGoals, isLoaded]);
+    }, [expenses, monthlyBudget, monthlyIncome, savingsGoals, holdings, isLoaded]);
 
     const triggerConfetti = () => {
         if (typeof window !== "undefined") {
@@ -164,6 +188,26 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
         );
     };
 
+    const addHolding = (holdingData: Omit<InvestmentHolding, "id" | "created_at">) => {
+        const newHolding: InvestmentHolding = {
+            ...holdingData,
+            id: uuidv4(),
+            created_at: new Date().toISOString(),
+        };
+        setHoldings((prev) => [...prev, newHolding]);
+        triggerConfetti();
+    };
+
+    const updateHolding = (id: string, updates: Partial<InvestmentHolding>) => {
+        setHoldings((prev) =>
+            prev.map((h) => (h.id === id ? { ...h, ...updates } : h))
+        );
+    };
+
+    const deleteHolding = (id: string) => {
+        setHoldings((prev) => prev.filter((h) => h.id !== id));
+    };
+
     return (
         <ExpensesContext.Provider
             value={{
@@ -180,6 +224,10 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
                 updateSavingsGoal,
                 deleteSavingsGoal,
                 addToSavings,
+                holdings,
+                addHolding,
+                updateHolding,
+                deleteHolding,
             }}
         >
             {children}
