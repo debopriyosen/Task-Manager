@@ -21,7 +21,7 @@ const BANK_RATES: Record<string, { general: number; senior: number; logo: string
 
 export default function FDCalculatorPage() {
     const [bank, setBank] = useState("SBI");
-    const [amount, setAmount] = useState<number>(100000);
+    const [amount, setAmount] = useState<number>(50000);
     const [tenureYears, setTenureYears] = useState<number>(1);
     const [tenureMonths, setTenureMonths] = useState<number>(0);
     const [isSenior, setIsSenior] = useState(false);
@@ -172,7 +172,7 @@ export default function FDCalculatorPage() {
                             </div>
                             <input 
                                 type="range" 
-                                min="10000" 
+                                min="50000" 
                                 max="10000000" 
                                 step="10000" 
                                 value={amount} 
