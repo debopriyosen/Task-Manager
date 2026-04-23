@@ -114,7 +114,7 @@ export function CreateExpenseModal({ isOpen, onClose, expenseToEdit = null }: Cr
                     <h2 className="text-lg sm:text-xl font-bold text-foreground tracking-tight relative z-10 w-full flex items-center justify-between mr-4 sm:mr-8">
                         <div className="flex items-center gap-3">
                             <div className="p-2 sm:p-2.5 bg-emerald-100/50 dark:bg-emerald-500/10 text-emerald-600 rounded-xl border border-emerald-200/50 dark:border-emerald-500/20">
-                                <IndianRupee size={20} sm:size={22} strokeWidth={2.5}/>
+                                <IndianRupee size={22} strokeWidth={2.5}/>
                             </div>
                             {expenseToEdit ? "Edit Expense" : "New Expense"}
                         </div>
@@ -129,7 +129,7 @@ export function CreateExpenseModal({ isOpen, onClose, expenseToEdit = null }: Cr
                                 }`}
                                 title="Add by Voice"
                             >
-                                {isListening ? <Loader2 size={14} sm:size={16} className="animate-spin" /> : <Mic size={14} sm:size={16} />}
+                                {isListening ? <Loader2 size={16} className="animate-spin" /> : <Mic size={16} />}
                                 <span className="hidden sm:inline">{isListening ? "Listening..." : "Voice Input"}</span>
                             </button>
                         )}
