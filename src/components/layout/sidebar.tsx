@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CalendarDays, CheckCircle2, ListTodo, Settings, Folder, Activity, PieChart, TrendingUp, Receipt, Target, Wallet, Heart } from "lucide-react";
+import { LayoutDashboard, CalendarDays, CheckCircle2, ListTodo, Settings, Folder, Activity, PieChart, TrendingUp, Receipt, Target, Wallet, Heart, Repeat } from "lucide-react";
 import { useTasks } from "@/contexts/TasksContext";
 import { useAppMode } from "@/contexts/AppModeContext";
 
@@ -33,6 +33,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         { name: "Insights", href: "/dashboard/insights", icon: Heart },
         { name: "Market Watch", href: "/dashboard/markets", icon: TrendingUp },
         { name: "Portfolio", href: "/dashboard/portfolio", icon: Wallet },
+        { name: "SIPs", href: "/dashboard/sips", icon: Repeat },
     ];
 
     const navItems = mode === "tasks" ? taskNavItems : expenseNavItems;
