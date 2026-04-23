@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { useTasks } from "@/contexts/TasksContext";
 import { useAppMode } from "@/contexts/AppModeContext";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AppModeToggle } from "@/components/layout/app-mode-toggle";
 
@@ -21,6 +21,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
+    const pathname = usePathname();
 
     useEffect(() => {
         setMounted(true);
@@ -64,7 +65,7 @@ export function Topbar({ onOpenSidebar }: TopbarProps) {
                 <button onClick={onOpenSidebar} className="md:hidden text-muted-foreground hover:text-foreground transition-colors p-2 rounded-lg hover:bg-muted">
                     <Menu size={20} />
                 </button>
-                <AppModeToggle />
+                {pathname === "/dashboard" && <AppModeToggle />}
             </div>
 
             <div className="flex items-center gap-3">
