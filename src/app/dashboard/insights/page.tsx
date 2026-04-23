@@ -3,14 +3,14 @@
 import { useState, useMemo } from "react";
 import { useExpenses } from "@/contexts/ExpensesContext";
 import { format, subMonths, parseISO } from "date-fns";
-import { motion } from "framer-motion";
-import { Heart, ShieldCheck, TrendingDown, Target, PiggyBank, ArrowLeftRight, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Heart, ShieldCheck, TrendingDown, Target, PiggyBank, ArrowLeftRight, ChevronDown, Wallet, Edit3, X, Check } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
 
 // ===== FINANCIAL HEALTH SCORE =====
 
 function useHealthScore() {
-    const { expenses, monthlyBudget, savingsGoals } = useExpenses();
+    const { expenses, monthlyBudget, monthlyIncome, savingsGoals } = useExpenses();
     const now = new Date();
 
     return useMemo(() => {
@@ -47,7 +47,7 @@ function useHealthScore() {
 
         // 3. Savings Rate (0-25 pts)
         let savingsScore = 12;
-        const income = monthlyBudget > 0 ? monthlyBudget : (prevSpend > 0 ? prevSpend * 1.3 : 0);
+        const income = monthlyIncome > 0 ? monthlyIncome : (monthlyBudget > 0 ? monthlyBudget : (prevSpend > 0 ? prevSpend * 1.3 : 0));
         if (income > 0) {
             const savingsRate = (income - currentSpend) / income;
             if (savingsRate >= 0.3) savingsScore = 25;
@@ -87,7 +87,7 @@ function useHealthScore() {
                 { name: "Goal Progress", score: goalScore, max: 20, icon: Target, color: "amber", tip: savingsGoals.length > 0 ? `${savingsGoals.length} goal(s) tracked` : "Create savings goals to boost this" },
             ],
         };
-    }, [expenses, monthlyBudget, savingsGoals, now]);
+    }, [expenses, monthlyBudget, monthlyIncome, savingsGoals, now]);
 }
 
 function HealthScoreRing({ score }: { score: number }) {
@@ -141,11 +141,29 @@ const CATEGORY_COLORS_MAP: Record<string, string> = {
 };
 
 export default function InsightsPage() {
-    const { expenses } = useExpenses();
+    const { expenses, monthlyIncome, setMonthlyIncome } = useExpenses();
     const now = new Date();
 
     // Health Score
     const health = useHealthScore();
+
+    // Income editor state
+    const [isEditingIncome, setIsEditingIncome] = useState(false);
+    const [tempIncome, setTempIncome] = useState(monthlyIncome.toString());
+
+    const handleIncomeSave = () => {
+        const val = Number(tempIncome);
+        if (val >= 0) {
+            setMonthlyIncome(val);
+            setIsEditingIncome(false);
+        }
+    };
+
+    // Current month spend & savings
+    const currentMonthStr = format(now, "yyyy-MM");
+    const currentSpend = expenses.filter(e => e.date.startsWith(currentMonthStr)).reduce((a, c) => a + c.amount, 0);
+    const monthlySavings = monthlyIncome > 0 ? monthlyIncome - currentSpend : 0;
+    const savingsRate = monthlyIncome > 0 ? (monthlySavings / monthlyIncome) * 100 : 0;
 
     // Month comparison
     const availableMonths = useMemo(() => {
@@ -163,7 +181,6 @@ export default function InsightsPage() {
         const totalA = expA.reduce((a, c) => a + c.amount, 0);
         const totalB = expB.reduce((a, c) => a + c.amount, 0);
 
-        // Get all categories
         const allCats = new Set<string>();
         expA.forEach(e => allCats.add(e.category));
         expB.forEach(e => allCats.add(e.category));
@@ -189,6 +206,100 @@ export default function InsightsPage() {
                 </h1>
                 <p className="text-slate-500 text-sm mt-1">Your personal financial health dashboard</p>
             </div>
+
+            {/* ===== INCOME & OVERVIEW STRIP ===== */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Monthly Income */}
+                <div className="bg-gradient-to-br from-emerald-600 to-teal-600 text-white rounded-2xl p-5 shadow-lg shadow-emerald-500/15 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 -mt-6 -mr-6 w-24 h-24 bg-white/10 rounded-full blur-xl" />
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-2">
+                            <p className="text-[11px] text-emerald-100 font-medium uppercase tracking-wider flex items-center gap-1.5">
+                                <Wallet size={13} /> Monthly Income
+                            </p>
+                            <button
+                                onClick={() => { setTempIncome(monthlyIncome.toString()); setIsEditingIncome(true); }}
+                                className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+                                title="Edit Income"
+                            >
+                                <Edit3 size={13} />
+                            </button>
+                        </div>
+                        <p className="text-2xl font-black">
+                            {monthlyIncome > 0 ? `₹${monthlyIncome.toLocaleString("en-IN")}` : "Not Set"}
+                        </p>
+                        {monthlyIncome === 0 && (
+                            <button
+                                onClick={() => { setTempIncome(""); setIsEditingIncome(true); }}
+                                className="mt-2 text-[11px] text-emerald-200 underline underline-offset-2 hover:text-white transition-colors"
+                            >
+                                Set your income →
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                {/* Monthly Savings */}
+                <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+                    <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-2">This Month&apos;s Savings</p>
+                    <p className={`text-2xl font-black ${monthlySavings >= 0 ? "text-emerald-600" : "text-red-500"}`}>
+                        {monthlyIncome > 0 ? `₹${monthlySavings.toLocaleString("en-IN", { maximumFractionDigits: 0 })}` : "—"}
+                    </p>
+                    {monthlyIncome > 0 && (
+                        <p className={`text-[10px] font-bold mt-1 ${savingsRate >= 20 ? "text-emerald-500" : savingsRate >= 0 ? "text-amber-500" : "text-red-500"}`}>
+                            {savingsRate.toFixed(1)}% savings rate
+                        </p>
+                    )}
+                </div>
+
+                {/* Month Spent */}
+                <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+                    <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-2">Spent This Month</p>
+                    <p className="text-2xl font-black text-foreground">₹{currentSpend.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
+                    {monthlyIncome > 0 && (
+                        <div className="mt-2">
+                            <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div className={`h-full rounded-full transition-all ${(currentSpend / monthlyIncome) > 1 ? "bg-red-500" : "bg-emerald-500"}`} style={{ width: `${Math.min((currentSpend / monthlyIncome) * 100, 100)}%` }} />
+                            </div>
+                            <p className="text-[10px] text-muted-foreground mt-1">{((currentSpend / monthlyIncome) * 100).toFixed(0)}% of income</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Income Edit Modal */}
+            <AnimatePresence>
+                {isEditingIncome && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm shadow-xl">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-bold flex items-center gap-2"><Wallet size={20} className="text-emerald-500" /> Monthly Income</h3>
+                                <button onClick={() => setIsEditingIncome(false)} className="p-1.5 hover:bg-muted rounded-lg"><X size={18} /></button>
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-4">Enter your total monthly income. This is used to calculate your savings rate and financial health score.</p>
+                            <input
+                                type="number"
+                                value={tempIncome}
+                                onChange={(e) => setTempIncome(e.target.value)}
+                                className="w-full bg-muted border border-border rounded-xl p-3 outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-lg mb-3"
+                                placeholder="e.g. 50000"
+                                autoFocus
+                            />
+                            {/* Quick amounts */}
+                            <div className="flex gap-2 flex-wrap mb-4">
+                                {[25000, 50000, 75000, 100000].map(amt => (
+                                    <button key={amt} onClick={() => setTempIncome(String(amt))} className="px-3 py-1.5 rounded-lg bg-muted border border-border text-xs font-bold hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-500/10 transition-colors">
+                                        ₹{amt.toLocaleString()}
+                                    </button>
+                                ))}
+                            </div>
+                            <button onClick={handleIncomeSave} className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-200 dark:shadow-none flex items-center justify-center gap-2">
+                                <Check size={18} /> Save Income
+                            </button>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             {/* ===== HEALTH SCORE SECTION ===== */}
             <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">

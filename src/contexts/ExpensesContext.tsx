@@ -37,11 +37,13 @@ export interface SavingsGoal {
 interface ExpensesContextType {
     expenses: Expense[];
     monthlyBudget: number;
+    monthlyIncome: number;
     savingsGoals: SavingsGoal[];
     addExpense: (expense: Omit<Expense, "id" | "created_at">) => void;
     updateExpense: (id: string, updates: Partial<Expense>) => void;
     deleteExpense: (id: string) => void;
     setMonthlyBudget: (budget: number) => void;
+    setMonthlyIncome: (income: number) => void;
     addSavingsGoal: (goal: Omit<SavingsGoal, "id" | "created_at">) => void;
     updateSavingsGoal: (id: string, updates: Partial<SavingsGoal>) => void;
     deleteSavingsGoal: (id: string) => void;
@@ -53,6 +55,7 @@ const ExpensesContext = createContext<ExpensesContextType | undefined>(undefined
 export function ExpensesProvider({ children }: { children: React.ReactNode }) {
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [monthlyBudget, setMonthlyBudget] = useState<number>(0);
+    const [monthlyIncome, setMonthlyIncome] = useState<number>(0);
     const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -78,6 +81,10 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
                 console.error("Failed to parse savings goals");
             }
         }
+        const savedIncome = localStorage.getItem("planora_income");
+        if (savedIncome) {
+            setMonthlyIncome(Number(savedIncome));
+        }
         setIsLoaded(true);
     }, []);
 
@@ -86,9 +93,10 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
         if (isLoaded) {
             localStorage.setItem("planora_expenses", JSON.stringify(expenses));
             localStorage.setItem("planora_budget", String(monthlyBudget));
+            localStorage.setItem("planora_income", String(monthlyIncome));
             localStorage.setItem("planora_savings_goals", JSON.stringify(savingsGoals));
         }
-    }, [expenses, monthlyBudget, savingsGoals, isLoaded]);
+    }, [expenses, monthlyBudget, monthlyIncome, savingsGoals, isLoaded]);
 
     const triggerConfetti = () => {
         if (typeof window !== "undefined") {
@@ -161,11 +169,13 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
             value={{
                 expenses,
                 monthlyBudget,
+                monthlyIncome,
                 savingsGoals,
                 addExpense,
                 updateExpense,
                 deleteExpense,
                 setMonthlyBudget,
+                setMonthlyIncome,
                 addSavingsGoal,
                 updateSavingsGoal,
                 deleteSavingsGoal,

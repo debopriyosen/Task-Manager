@@ -17,7 +17,7 @@ const GOAL_COLORS = [
 const EMOJIS = ["🎯", "💻", "🏠", "🚗", "✈️", "📱", "🎓", "💍", "🏖️", "🎸", "📸", "🎮"];
 
 export default function SavingsPage() {
-    const { savingsGoals, expenses, addSavingsGoal, addToSavings, deleteSavingsGoal, monthlyBudget } = useExpenses();
+    const { savingsGoals, expenses, addSavingsGoal, addToSavings, deleteSavingsGoal, monthlyBudget, monthlyIncome } = useExpenses();
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null);
     const [showDepositModal, setShowDepositModal] = useState<string | null>(null);
@@ -42,7 +42,7 @@ export default function SavingsPage() {
         }
         const avgMonthlySpend = totalLast3 / 3;
 
-        const income = monthlyBudget > 0 ? monthlyBudget : avgMonthlySpend * 1.3;
+        const income = monthlyIncome > 0 ? monthlyIncome : (monthlyBudget > 0 ? monthlyBudget : avgMonthlySpend * 1.3);
         const saveable = Math.max(income - forecastedSpend, 0);
 
         return { forecastedSpend, avgMonthlySpend, saveable, income };
