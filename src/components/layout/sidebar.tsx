@@ -33,7 +33,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         { name: "Insights", href: "/dashboard/insights", icon: Heart },
         { name: "Market Watch", href: "/dashboard/markets", icon: TrendingUp },
         { name: "Portfolio", href: "/dashboard/portfolio", icon: Wallet },
-        { name: "SIPs", href: "/dashboard/sips", icon: Repeat },
+        { name: "FD Calculator", href: "/dashboard/fd-calculator", icon: Receipt },
     ];
 
     const navItems = mode === "tasks" ? taskNavItems : expenseNavItems;

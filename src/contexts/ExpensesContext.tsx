@@ -44,17 +44,6 @@ export interface InvestmentHolding {
     created_at: string;
 }
 
-export interface SIP {
-    id: string;
-    name: string;
-    amount: number;
-    startDate: string;
-    frequency: "monthly";
-    category: string;
-    expectedReturn: number; // Annual %
-    created_at: string;
-}
-
 interface ExpensesContextType {
     expenses: Expense[];
     monthlyBudget: number;
@@ -73,10 +62,6 @@ interface ExpensesContextType {
     addHolding: (holding: Omit<InvestmentHolding, "id" | "created_at">) => void;
     updateHolding: (id: string, updates: Partial<InvestmentHolding>) => void;
     deleteHolding: (id: string) => void;
-    sips: SIP[];
-    addSIP: (sip: Omit<SIP, "id" | "created_at">) => void;
-    updateSIP: (id: string, updates: Partial<SIP>) => void;
-    deleteSIP: (id: string) => void;
 }
 
 const ExpensesContext = createContext<ExpensesContextType | undefined>(undefined);
@@ -87,7 +72,6 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
     const [monthlyIncome, setMonthlyIncome] = useState<number>(0);
     const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
     const [holdings, setHoldings] = useState<InvestmentHolding[]>([]);
-    const [sips, setSips] = useState<SIP[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Load from LocalStorage
@@ -124,14 +108,6 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
                 console.error("Failed to parse holdings");
             }
         }
-        const savedSips = localStorage.getItem("planora_sips");
-        if (savedSips) {
-            try {
-                setSips(JSON.parse(savedSips));
-            } catch (e) {
-                console.error("Failed to parse sips");
-            }
-        }
         setIsLoaded(true);
     }, []);
 
@@ -143,9 +119,8 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem("planora_income", String(monthlyIncome));
             localStorage.setItem("planora_savings_goals", JSON.stringify(savingsGoals));
             localStorage.setItem("planora_holdings", JSON.stringify(holdings));
-            localStorage.setItem("planora_sips", JSON.stringify(sips));
         }
-    }, [expenses, monthlyBudget, monthlyIncome, savingsGoals, holdings, sips, isLoaded]);
+    }, [expenses, monthlyBudget, monthlyIncome, savingsGoals, holdings, isLoaded]);
 
     const triggerConfetti = () => {
         if (typeof window !== "undefined") {
@@ -233,26 +208,6 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
         setHoldings((prev) => prev.filter((h) => h.id !== id));
     };
 
-    const addSIP = (sipData: Omit<SIP, "id" | "created_at">) => {
-        const newSIP: SIP = {
-            ...sipData,
-            id: uuidv4(),
-            created_at: new Date().toISOString(),
-        };
-        setSips((prev) => [...prev, newSIP]);
-        triggerConfetti();
-    };
-
-    const updateSIP = (id: string, updates: Partial<SIP>) => {
-        setSips((prev) =>
-            prev.map((s) => (s.id === id ? { ...s, ...updates } : s))
-        );
-    };
-
-    const deleteSIP = (id: string) => {
-        setSips((prev) => prev.filter((s) => s.id !== id));
-    };
-
     return (
         <ExpensesContext.Provider
             value={{
@@ -273,10 +228,6 @@ export function ExpensesProvider({ children }: { children: React.ReactNode }) {
                 addHolding,
                 updateHolding,
                 deleteHolding,
-                sips,
-                addSIP,
-                updateSIP,
-                deleteSIP,
             }}
         >
             {children}
