@@ -81,31 +81,31 @@ export default function SavingsPage() {
             </div>
 
             {/* Smart Recommendation Banner */}
-            <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl p-6 text-white shadow-xl shadow-emerald-500/20">
+            <div className="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl p-5 sm:p-6 text-white shadow-xl shadow-emerald-500/20">
                 <div className="absolute top-0 right-0 -mt-10 -mr-10 w-48 h-48 bg-white/10 rounded-full blur-2xl" />
                 <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-teal-400/20 rounded-full blur-xl" />
                 <div className="relative z-10">
                     <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="text-yellow-300" size={20} />
-                        <h2 className="font-bold text-lg">Smart Savings Insight</h2>
+                        <Sparkles className="text-yellow-300" size={18} />
+                        <h2 className="font-bold text-base sm:text-lg">Smart Savings Insight</h2>
                     </div>
-                    <p className="text-emerald-50 text-sm mb-4 max-w-xl">
+                    <p className="text-emerald-50 text-xs sm:text-sm mb-4 max-w-xl">
                         Based on your spending patterns, here&apos;s what your finances look like this month:
                     </p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
-                            <p className="text-[11px] text-emerald-200 font-medium uppercase tracking-wider">Forecasted Spend</p>
-                            <p className="text-xl font-bold mt-1">₹{recommendation.forecastedSpend.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/5">
+                            <p className="text-[9px] sm:text-[11px] text-emerald-200 font-medium uppercase tracking-wider">Forecasted Spend</p>
+                            <p className="text-lg sm:text-xl font-bold mt-1">₹{recommendation.forecastedSpend.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
                         </div>
-                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
-                            <p className="text-[11px] text-emerald-200 font-medium uppercase tracking-wider">
-                                {monthlyBudget > 0 ? "Your Budget" : "Avg Monthly"}
+                        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/5">
+                            <p className="text-[9px] sm:text-[11px] text-emerald-200 font-medium uppercase tracking-wider">
+                                {monthlyIncome > 0 ? "Your Income" : (monthlyBudget > 0 ? "Your Budget" : "Avg Monthly")}
                             </p>
-                            <p className="text-xl font-bold mt-1">₹{recommendation.income.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
+                            <p className="text-lg sm:text-xl font-bold mt-1">₹{recommendation.income.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
                         </div>
                         <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 border border-white/20 col-span-2 sm:col-span-1">
-                            <p className="text-[11px] text-yellow-200 font-bold uppercase tracking-wider">You Can Save</p>
-                            <p className="text-xl font-bold mt-1 text-yellow-200">₹{recommendation.saveable.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
+                            <p className="text-[9px] sm:text-[11px] text-yellow-200 font-bold uppercase tracking-wider">You Can Save</p>
+                            <p className="text-lg sm:text-xl font-bold mt-1 text-yellow-200">₹{recommendation.saveable.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
                         </div>
                     </div>
                 </div>
@@ -113,18 +113,18 @@ export default function SavingsPage() {
 
             {/* Summary Strip */}
             {savingsGoals.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Active Goals</p>
-                        <p className="text-2xl font-bold mt-1">{savingsGoals.filter(g => g.savedAmount < g.targetAmount).length}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="bg-card border border-border rounded-2xl p-4 sm:p-5 shadow-sm">
+                        <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Active Goals</p>
+                        <p className="text-xl sm:text-2xl font-bold mt-1">{savingsGoals.filter(g => g.savedAmount < g.targetAmount).length}</p>
                     </div>
-                    <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Saved</p>
-                        <p className="text-2xl font-bold mt-1 text-emerald-600">₹{totalSaved.toLocaleString("en-IN")}</p>
+                    <div className="bg-card border border-border rounded-2xl p-4 sm:p-5 shadow-sm">
+                        <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Saved</p>
+                        <p className="text-xl sm:text-2xl font-bold mt-1 text-emerald-600">₹{totalSaved.toLocaleString("en-IN")}</p>
                     </div>
-                    <div className="bg-card border border-border rounded-2xl p-5 shadow-sm col-span-2 sm:col-span-1">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Target</p>
-                        <p className="text-2xl font-bold mt-1">₹{totalTarget.toLocaleString("en-IN")}</p>
+                    <div className="bg-card border border-border rounded-2xl p-4 sm:p-5 shadow-sm col-span-2 sm:col-span-1">
+                        <p className="text-[10px] sm:text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Target</p>
+                        <p className="text-xl sm:text-2xl font-bold mt-1">₹{totalTarget.toLocaleString("en-IN")}</p>
                     </div>
                 </div>
             )}
@@ -219,14 +219,14 @@ export default function SavingsPage() {
                                     )}
                                     <button
                                         onClick={() => setEditingGoal(goal)}
-                                        className="p-2.5 rounded-xl border border-border text-muted-foreground hover:text-indigo-500 hover:border-indigo-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all"
+                                        className="p-2.5 rounded-xl border border-border text-muted-foreground hover:text-indigo-500 hover:border-indigo-200 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
                                         title="Edit Goal"
                                     >
                                         <Plus size={16} className="rotate-45" />
                                     </button>
                                     <button
                                         onClick={() => deleteSavingsGoal(goal.id)}
-                                        className="p-2.5 rounded-xl border border-border text-muted-foreground hover:text-red-500 hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all"
+                                        className="p-2.5 rounded-xl border border-border text-muted-foreground hover:text-red-500 hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-500/10 lg:opacity-0 lg:group-hover:opacity-100 transition-all"
                                         title="Delete Goal"
                                     >
                                         <Trash2 size={16} />

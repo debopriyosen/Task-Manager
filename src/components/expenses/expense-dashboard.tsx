@@ -88,7 +88,7 @@ export function ExpenseDashboard() {
             </div>
 
             {/* Top Stats Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 {/* Monthly Spend */}
                 <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
                     <div className="flex items-center justify-between mb-3">
@@ -146,9 +146,9 @@ export function ExpenseDashboard() {
             {/* Middle Row: Weekly Chart + Category Breakdown */}
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
                 {/* Weekly Spend Chart */}
-                <div className="lg:col-span-3 bg-card border border-border rounded-2xl p-5 shadow-sm">
+                <div className="lg:col-span-3 bg-card border border-border rounded-2xl p-4 sm:p-5 shadow-sm">
                     <h3 className="text-sm font-semibold text-foreground mb-4">Last 7 Days</h3>
-                    <div className="h-48">
+                    <div className="h-40 sm:h-48">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={weeklyTrend} barSize={28}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
@@ -164,11 +164,11 @@ export function ExpenseDashboard() {
                 </div>
 
                 {/* Category Breakdown */}
-                <div className="lg:col-span-2 bg-card border border-border rounded-2xl p-5 shadow-sm">
+                <div className="lg:col-span-2 bg-card border border-border rounded-2xl p-4 sm:p-5 shadow-sm">
                     <h3 className="text-sm font-semibold text-foreground mb-4">By Category</h3>
                     {categoryData.length > 0 ? (
-                        <div className="flex items-center gap-4">
-                            <div className="w-28 h-28 shrink-0">
+                        <div className="flex flex-row items-center gap-4">
+                            <div className="w-24 h-24 sm:w-28 sm:h-28 shrink-0">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie data={categoryData} dataKey="value" cx="50%" cy="50%" innerRadius={28} outerRadius={48} strokeWidth={2} stroke="hsl(var(--card))">
@@ -267,9 +267,9 @@ export function ExpenseDashboard() {
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0 ml-2">
                                         <span className="text-sm font-bold text-foreground">₹{expense.amount.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</span>
-                                        <div className="flex opacity-0 group-hover:opacity-100 transition-opacity gap-0.5">
-                                            <button onClick={() => setExpenseToEdit(expense)} className="p-1 text-muted-foreground hover:text-emerald-600 rounded transition-colors"><Edit2 size={13} /></button>
-                                            <button onClick={() => deleteExpense(expense.id)} className="p-1 text-muted-foreground hover:text-red-500 rounded transition-colors"><Trash2 size={13} /></button>
+                                        <div className="flex opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity gap-0.5">
+                                            <button onClick={() => setExpenseToEdit(expense)} className="p-1.5 text-muted-foreground hover:text-emerald-600 rounded-lg bg-muted/50 lg:bg-transparent transition-colors" aria-label="Edit"><Edit2 size={14} /></button>
+                                            <button onClick={() => deleteExpense(expense.id)} className="p-1.5 text-muted-foreground hover:text-red-500 rounded-lg bg-muted/50 lg:bg-transparent transition-colors" aria-label="Delete"><Trash2 size={14} /></button>
                                         </div>
                                     </div>
                                 </div>
@@ -287,7 +287,7 @@ export function ExpenseDashboard() {
             {/* Floating Add Button */}
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="fixed bottom-8 right-8 w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-xl shadow-emerald-500/30 flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-50"
+                className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-xl shadow-emerald-500/30 flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-50"
                 aria-label="Add Expense"
             >
                 <Plus size={26} strokeWidth={2.5} />

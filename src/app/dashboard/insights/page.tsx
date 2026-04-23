@@ -199,12 +199,12 @@ export default function InsightsPage() {
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500 pb-10">
+        <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500 pb-10">
             <div>
-                <h1 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
-                    <Heart className="text-rose-500" /> Financial Insights
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
+                    <Heart className="text-rose-500" size={24} /> Financial Insights
                 </h1>
-                <p className="text-slate-500 text-sm mt-1">Your personal financial health dashboard</p>
+                <p className="text-slate-500 text-xs sm:text-sm mt-1">Your personal financial health dashboard</p>
             </div>
 
             {/* ===== INCOME & OVERVIEW STRIP ===== */}
@@ -303,12 +303,12 @@ export default function InsightsPage() {
 
             {/* ===== HEALTH SCORE SECTION ===== */}
             <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
-                <div className="p-6 pb-0">
+                <div className="p-4 sm:p-6 pb-0">
                     <h2 className="text-lg font-bold text-foreground">Financial Health Score</h2>
                     <p className="text-xs text-muted-foreground mt-0.5">Based on your spending habits, budget adherence, and savings progress</p>
                 </div>
 
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-center">
                     {/* Score Ring */}
                     <div className="text-center">
                         <HealthScoreRing score={health.total} />
@@ -342,15 +342,15 @@ export default function InsightsPage() {
                                         </div>
                                         <span className="text-xs font-bold text-muted-foreground">{item.score}/{item.max}</span>
                                     </div>
-                                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden border border-slate-200/20 dark:border-white/5">
                                         <motion.div
                                             initial={{ width: 0 }}
                                             animate={{ width: `${pct}%` }}
                                             transition={{ duration: 0.8, delay: 0.5 + i * 0.15, ease: "easeOut" }}
-                                            className={`h-full rounded-full bg-${item.color}-500`}
+                                            className={`h-full rounded-full bg-${item.color}-500 shadow-sm`}
                                         />
                                     </div>
-                                    <p className="text-[10px] text-muted-foreground">{item.tip}</p>
+                                    <p className="text-[9px] sm:text-[10px] text-muted-foreground leading-tight">{item.tip}</p>
                                 </motion.div>
                             );
                         })}
@@ -360,7 +360,7 @@ export default function InsightsPage() {
 
             {/* ===== COMPARE MONTHS SECTION ===== */}
             <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden">
-                <div className="p-6 pb-4">
+                <div className="p-4 sm:p-6 pb-4">
                     <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                         <ArrowLeftRight size={20} className="text-indigo-500" /> Compare Months
                     </h2>
@@ -385,23 +385,23 @@ export default function InsightsPage() {
                 </div>
 
                 {/* Total Comparison */}
-                <div className="px-6 pb-4">
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-indigo-50 dark:bg-indigo-500/10 rounded-xl p-4 text-center">
-                            <p className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider mb-1">{formatMonth(monthA)}</p>
-                            <p className="text-xl font-black text-indigo-700 dark:text-indigo-300">₹{comparison.totalA.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
-                            <p className="text-[10px] text-indigo-400 mt-1">{comparison.txA} transactions</p>
+                <div className="px-4 sm:px-6 pb-4">
+                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                        <div className="bg-indigo-50 dark:bg-indigo-500/10 rounded-xl p-3 sm:p-4 text-center border border-indigo-100 dark:border-indigo-500/20">
+                            <p className="text-[9px] sm:text-[10px] text-indigo-500 font-bold uppercase tracking-wider mb-1">{formatMonth(monthA)}</p>
+                            <p className="text-base sm:text-xl font-black text-indigo-700 dark:text-indigo-300">₹{comparison.totalA.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
+                            <p className="text-[9px] sm:text-[10px] text-indigo-400 mt-1">{comparison.txA} txs</p>
                         </div>
                         <div className="flex flex-col items-center justify-center">
-                            <div className={`text-sm font-black ${comparison.diff > 0 ? "text-red-500" : comparison.diff < 0 ? "text-emerald-500" : "text-muted-foreground"}`}>
+                            <div className={`text-xs sm:text-sm font-black ${comparison.diff > 0 ? "text-red-500" : comparison.diff < 0 ? "text-emerald-500" : "text-muted-foreground"}`}>
                                 {comparison.diff > 0 ? "+" : ""}₹{comparison.diff.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
                             </div>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">difference</p>
+                            <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">difference</p>
                         </div>
-                        <div className="bg-emerald-50 dark:bg-emerald-500/10 rounded-xl p-4 text-center">
-                            <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider mb-1">{formatMonth(monthB)}</p>
-                            <p className="text-xl font-black text-emerald-700 dark:text-emerald-300">₹{comparison.totalB.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
-                            <p className="text-[10px] text-emerald-400 mt-1">{comparison.txB} transactions</p>
+                        <div className="bg-emerald-50 dark:bg-emerald-500/10 rounded-xl p-3 sm:p-4 text-center border border-emerald-100 dark:border-emerald-500/20">
+                            <p className="text-[9px] sm:text-[10px] text-emerald-500 font-bold uppercase tracking-wider mb-1">{formatMonth(monthB)}</p>
+                            <p className="text-base sm:text-xl font-black text-emerald-700 dark:text-emerald-300">₹{comparison.totalB.toLocaleString("en-IN", { maximumFractionDigits: 0 })}</p>
+                            <p className="text-[9px] sm:text-[10px] text-emerald-400 mt-1">{comparison.txB} txs</p>
                         </div>
                     </div>
                 </div>
