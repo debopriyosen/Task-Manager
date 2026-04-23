@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { useExpenses } from "@/contexts/ExpensesContext";
 import { format, subMonths, parseISO } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, ShieldCheck, TrendingDown, Target, PiggyBank, ArrowLeftRight, ChevronDown, Wallet, Edit3, X, Check } from "lucide-react";
+import { Heart, ShieldCheck, TrendingDown, TrendingUp, Target, PiggyBank, ArrowLeftRight, ChevronDown, Wallet, Edit3, X, Check } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
 
 // ===== FINANCIAL HEALTH SCORE =====
@@ -459,6 +460,23 @@ export default function InsightsPage() {
                     </div>
                 )}
             </div>
+            {/* Quick Link to Markets */}
+            <Link href="/dashboard/markets" className="block group mt-8">
+                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] relative overflow-hidden">
+                    <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+                    <div className="relative z-10 flex items-center justify-between">
+                        <div>
+                            <h3 className="text-lg font-bold flex items-center gap-2">
+                                <TrendingUp size={20} /> New: Market Watch
+                            </h3>
+                            <p className="text-indigo-100 text-xs mt-1">Track Sensex, Nifty, Gold, and Silver live from your dashboard.</p>
+                        </div>
+                        <div className="bg-white/20 p-3 rounded-xl group-hover:bg-white/30 transition-colors">
+                            <ArrowLeftRight size={20} className="rotate-90" />
+                        </div>
+                    </div>
+                </div>
+            </Link>
         </div>
     );
 }

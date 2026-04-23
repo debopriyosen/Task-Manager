@@ -31,6 +31,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         { name: "Analytics", href: "/dashboard/analytics", icon: PieChart },
         { name: "Savings Goals", href: "/dashboard/savings", icon: Target },
         { name: "Insights", href: "/dashboard/insights", icon: Heart },
+        { name: "Market Watch", href: "/dashboard/markets", icon: TrendingUp },
     ];
 
     const navItems = mode === "tasks" ? taskNavItems : expenseNavItems;
