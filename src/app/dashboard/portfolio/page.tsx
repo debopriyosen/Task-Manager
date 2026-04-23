@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
     Wallet, Plus, Trash2, TrendingUp, TrendingDown, 
     ArrowUpRight, ArrowDownRight, Briefcase, 
-    ChevronRight, X, Clock, PieChart, Activity
+    X, Clock, PieChart, Activity, Edit3
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -26,8 +26,9 @@ const ASSET_NAMES: Record<string, string> = {
 };
 
 export default function PortfolioPage() {
-    const { holdings, addHolding, deleteHolding } = useExpenses();
-    const [showAddModal, setShowAddModal] = useState(false);
+    const { holdings, addHolding, updateHolding, deleteHolding } = useExpenses();
+    const [showModal, setShowModal] = useState(false);
+    const [holdingToEdit, setHoldingToEdit] = useState<InvestmentHolding | null>(null);
     
     // Live price simulation
     const [livePrices, setLivePrices] = useState(BASE_PRICES);
@@ -75,6 +76,11 @@ export default function PortfolioPage() {
         return { totalInvested, currentValue, profitLoss, profitLossPct, assetBreakdown };
     }, [holdings, livePrices]);
 
+    const handleEdit = (h: InvestmentHolding) => {
+        setHoldingToEdit(h);
+        setShowModal(true);
+    };
+
     return (
         <div className="space-y-8 animate-in fade-in duration-500 pb-10">
             {/* Header */}
@@ -86,7 +92,10 @@ export default function PortfolioPage() {
                     <p className="text-slate-500 text-sm mt-1">Manage your holdings and track live performance</p>
                 </div>
                 <button
-                    onClick={() => setShowAddModal(true)}
+                    onClick={() => {
+                        setHoldingToEdit(null);
+                        setShowModal(true);
+                    }}
                     className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-all shadow-lg shadow-indigo-200 dark:shadow-none"
                 >
                     <Plus size={18} /> Add Holding
@@ -124,7 +133,7 @@ export default function PortfolioPage() {
                             </span>
                         </div>
                     </div>
-                    <p className="text-[10px] text-muted-foreground mt-2">Live performance updated every 3 seconds</p>
+                    <p className="text-[10px] text-muted-foreground mt-2 font-medium">Updated every 3s • Mock Market</p>
                 </div>
             </div>
 
@@ -144,7 +153,7 @@ export default function PortfolioPage() {
                         </div>
                         <h3 className="font-bold text-foreground">No holdings found</h3>
                         <p className="text-sm text-muted-foreground mt-1 mb-6">Start tracking your investments by adding your first holding.</p>
-                        <button onClick={() => setShowAddModal(true)} className="text-indigo-600 font-bold text-sm hover:underline">Add Asset Now</button>
+                        <button onClick={() => setShowModal(true)} className="text-indigo-600 font-bold text-sm hover:underline">Add Asset Now</button>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
@@ -156,7 +165,7 @@ export default function PortfolioPage() {
                                     <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-right">Avg. Price</th>
                                     <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-right">Live Price</th>
                                     <th className="px-6 py-4 text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-right">Value / P&L</th>
-                                    <th className="px-6 py-4 text-center"></th>
+                                    <th className="px-6 py-4 text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -175,25 +184,35 @@ export default function PortfolioPage() {
                                             <td className="px-6 py-4">
                                                 <div>
                                                     <p className="font-bold text-foreground">{h.name}</p>
-                                                    <p className="text-[10px] text-muted-foreground font-mono">{h.assetId.toUpperCase()}</p>
+                                                    <p className="text-[10px] text-muted-foreground font-mono uppercase">{h.assetId}</p>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-right font-medium">{h.quantity.toLocaleString()}</td>
+                                            <td className="px-6 py-4 text-right font-bold tabular-nums text-foreground">{h.quantity.toLocaleString()}</td>
                                             <td className="px-6 py-4 text-right font-medium text-muted-foreground">₹{h.buyPrice.toLocaleString()}</td>
-                                            <td className="px-6 py-4 text-right tabular-nums font-bold">₹{currentPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
+                                            <td className="px-6 py-4 text-right tabular-nums font-black text-indigo-600 dark:text-indigo-400">₹{currentPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}</td>
                                             <td className="px-6 py-4 text-right">
                                                 <p className="font-black text-foreground">₹{value.toLocaleString(undefined, { maximumFractionDigits: 0 })}</p>
                                                 <p className={`text-[10px] font-bold ${pl >= 0 ? "text-emerald-500" : "text-red-500"}`}>
                                                     {pl >= 0 ? "+" : "-"}₹{Math.abs(pl).toLocaleString(undefined, { maximumFractionDigits: 0 })} ({plPct.toFixed(2)}%)
                                                 </p>
                                             </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <button 
-                                                    onClick={() => deleteHolding(h.id)}
-                                                    className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all lg:opacity-0 lg:group-hover:opacity-100"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center justify-center gap-1">
+                                                    <button 
+                                                        onClick={() => handleEdit(h)}
+                                                        className="p-2 text-muted-foreground hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"
+                                                        title="Edit Holding"
+                                                    >
+                                                        <Edit3 size={16} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => deleteHolding(h.id)}
+                                                        className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-all"
+                                                        title="Delete Holding"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </motion.tr>
                                     );
@@ -204,55 +223,71 @@ export default function PortfolioPage() {
                 )}
             </div>
 
-            {/* Add Holding Modal */}
+            {/* Holding Modal */}
             <AnimatePresence>
-                {showAddModal && (
-                    <AddHoldingModal onClose={() => setShowAddModal(false)} />
+                {showModal && (
+                    <HoldingModal 
+                        onClose={() => {
+                            setShowModal(false);
+                            setHoldingToEdit(null);
+                        }} 
+                        holdingToEdit={holdingToEdit}
+                    />
                 )}
             </AnimatePresence>
         </div>
     );
 }
 
-function AddHoldingModal({ onClose }: { onClose: () => void }) {
-    const { addHolding } = useExpenses();
-    const [assetId, setAssetId] = useState("nifty");
-    const [quantity, setQuantity] = useState("");
-    const [buyPrice, setBuyPrice] = useState("");
-    const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+function HoldingModal({ onClose, holdingToEdit }: { onClose: () => void; holdingToEdit: InvestmentHolding | null }) {
+    const { addHolding, updateHolding } = useExpenses();
+    const [assetId, setAssetId] = useState(holdingToEdit?.assetId || "nifty");
+    const [quantity, setQuantity] = useState(holdingToEdit?.quantity.toString() || "");
+    const [buyPrice, setBuyPrice] = useState(holdingToEdit?.buyPrice.toString() || "");
+    const [date, setDate] = useState(holdingToEdit?.date || format(new Date(), "yyyy-MM-dd"));
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!quantity || !buyPrice) return;
         
-        addHolding({
+        const data = {
             assetId,
             name: ASSET_NAMES[assetId],
             quantity: Number(quantity),
             buyPrice: Number(buyPrice),
             date
-        });
+        };
+
+        if (holdingToEdit) {
+            updateHolding(holdingToEdit.id, data);
+        } else {
+            addHolding(data);
+        }
         onClose();
     };
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
             <motion.div 
                 initial={{ opacity: 0, scale: 0.95, y: 20 }} 
                 animate={{ opacity: 1, scale: 1, y: 0 }} 
                 exit={{ opacity: 0, scale: 0.95 }} 
                 className="bg-card border border-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden"
             >
-                <div className="bg-indigo-600 p-6 text-white">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-xl font-bold flex items-center gap-2"><Plus size={22} /> Add Asset</h2>
+                <div className="bg-indigo-600 p-6 text-white relative">
+                    <div className="flex justify-between items-center relative z-10">
+                        <h2 className="text-xl font-bold flex items-center gap-2">
+                            {holdingToEdit ? <Edit3 size={22} /> : <Plus size={22} />} 
+                            {holdingToEdit ? "Edit Holding" : "Add Asset"}
+                        </h2>
                         <button onClick={onClose} className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"><X size={20} /></button>
                     </div>
+                    <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
                 </div>
                 
                 <form onSubmit={handleSubmit} className="p-6 space-y-5">
                     <div>
-                        <label className="text-sm font-medium text-muted-foreground block mb-2">Select Asset</label>
+                        <label className="text-sm font-semibold text-muted-foreground block mb-2 tracking-wide">Select Asset</label>
                         <div className="grid grid-cols-2 gap-2">
                             {Object.entries(ASSET_NAMES).map(([id, name]) => (
                                 <button
@@ -260,12 +295,12 @@ function AddHoldingModal({ onClose }: { onClose: () => void }) {
                                     type="button"
                                     onClick={() => {
                                         setAssetId(id);
-                                        setBuyPrice(BASE_PRICES[id].toString());
+                                        if (!holdingToEdit) setBuyPrice(BASE_PRICES[id].toString());
                                     }}
-                                    className={`px-3 py-2.5 rounded-xl border text-xs font-bold transition-all ${
+                                    className={`px-3 py-3 rounded-xl border text-xs font-bold transition-all ${
                                         assetId === id 
-                                        ? "bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-500/10 dark:border-indigo-500/30" 
-                                        : "border-border hover:bg-muted"
+                                        ? "bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-500/10 dark:border-indigo-500/40" 
+                                        : "border-border hover:bg-muted text-muted-foreground"
                                     }`}
                                 >
                                     {name}
@@ -275,46 +310,48 @@ function AddHoldingModal({ onClose }: { onClose: () => void }) {
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-sm font-medium text-muted-foreground">Quantity</label>
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Quantity</label>
                             <input 
                                 type="number" 
                                 step="any"
                                 value={quantity} 
                                 onChange={(e) => setQuantity(e.target.value)} 
-                                className="w-full mt-1 bg-muted border border-border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 font-bold" 
+                                className="w-full bg-muted/50 border border-border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-lg" 
                                 placeholder="0.00"
                                 required 
                             />
                         </div>
-                        <div>
-                            <label className="text-sm font-medium text-muted-foreground">Buy Price (₹)</label>
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Avg. Buy Price (₹)</label>
                             <input 
                                 type="number" 
                                 step="any"
                                 value={buyPrice} 
                                 onChange={(e) => setBuyPrice(e.target.value)} 
-                                className="w-full mt-1 bg-muted border border-border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 font-bold" 
+                                className="w-full bg-muted/50 border border-border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-lg" 
                                 placeholder="₹0.00"
                                 required 
                             />
                         </div>
                     </div>
 
-                    <div>
-                        <label className="text-sm font-medium text-muted-foreground">Purchase Date</label>
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Purchase Date</label>
                         <input 
                             type="date" 
                             value={date} 
                             onChange={(e) => setDate(e.target.value)} 
-                            className="w-full mt-1 bg-muted border border-border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 font-medium" 
+                            className="w-full bg-muted/50 border border-border rounded-xl p-3 outline-none focus:ring-2 focus:ring-indigo-500 font-bold" 
                             required 
                         />
                     </div>
 
-                    <button type="submit" className="w-full py-3.5 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-all active:scale-[0.98]">
-                        Save Asset
-                    </button>
+                    <div className="pt-2">
+                        <button type="submit" className="w-full py-4 bg-indigo-600 text-white font-black rounded-xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 hover:shadow-indigo-500/30 transition-all active:scale-[0.98] uppercase tracking-widest text-xs">
+                            {holdingToEdit ? "Update Holding" : "Save Asset"}
+                        </button>
+                    </div>
                 </form>
             </motion.div>
         </div>
