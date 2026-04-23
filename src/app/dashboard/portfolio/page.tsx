@@ -14,15 +14,15 @@ import { format } from "date-fns";
 const BASE_PRICES: Record<string, number> = {
     sensex: 77664.00,
     nifty: 24173.05,
-    gold: 154750.00,
-    silver: 260000.00
+    gold: 15475.00,
+    silver: 260.00
 };
 
 const ASSET_NAMES: Record<string, string> = {
     sensex: "BSE SENSEX",
     nifty: "NIFTY 50",
-    gold: "Gold (24K)",
-    silver: "Silver"
+    gold: "Gold (24K, 1g)",
+    silver: "Silver (1g)"
 };
 
 export default function PortfolioPage() {

@@ -40,23 +40,23 @@ const INITIAL_MARKETS: MarketItem[] = [
     },
     {
         id: "gold",
-        name: "Gold (24K)",
+        name: "Gold (24K, 1g)",
         symbol: "XAU/INR",
-        price: 154750.00,
-        change: 1250.00,
+        price: 15475.00,
+        change: 125.00,
         changePercent: 0.81,
         type: "commodity",
-        history: Array.from({ length: 20 }, (_, i) => ({ time: `${i}`, value: 153000 + Math.random() * 2000 }))
+        history: Array.from({ length: 20 }, (_, i) => ({ time: `${i}`, value: 15300 + Math.random() * 200 }))
     },
     {
         id: "silver",
-        name: "Silver",
+        name: "Silver (1g)",
         symbol: "XAG/INR",
-        price: 260000.00,
-        change: 4500.00,
+        price: 260.00,
+        change: 4.50,
         changePercent: 1.76,
         type: "commodity",
-        history: Array.from({ length: 20 }, (_, i) => ({ time: `${i}`, value: 255000 + Math.random() * 10000 }))
+        history: Array.from({ length: 20 }, (_, i) => ({ time: `${i}`, value: 255 + Math.random() * 10 }))
     }
 ];
 
